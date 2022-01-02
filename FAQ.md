@@ -8,3 +8,7 @@
 
    Sliders with a red 
 label are disabled and can't be moved. Sliders with a green label are enabled.
+3. **What do the "𝐺  is not a descendant of  𝑋" and "Backdoor criterion is 
+   satisfied" checkboxes do?**
+
+   Nothing so far. They will do something in the future.
