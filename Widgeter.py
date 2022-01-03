@@ -212,19 +212,28 @@ class Widgeter:
         None
 
         """
-        self.bounder_m.set_exp_probs_bds()
-        left_bds, right_bds = self.bounder_m.get_exp_probs_bds()
-        # set value of E_{1|i,m} for i=0,1
-        for i, sl in zip([0, 1], self.exp_sliders[0:2]):
-            a, b = left_bds[1, i], right_bds[1, i]
-            sl.min, sl.value, sl.max = a, a, b
-
-        self.bounder_f.set_exp_probs_bds()
-        left_bds, right_bds = self.bounder_f.get_exp_probs_bds()
-        # set value of E_{1|i,f} for i=0,1
-        for i, sl in zip([0, 1], self.exp_sliders[2:4]):
-            a, b = left_bds[1, i], right_bds[1, i]
-            sl.min, sl.value, sl.max = a, a, b
+        slider_to_bounder= {
+            self.exp_sliders[0]: self.bounder_m,
+            self.exp_sliders[1]: self.bounder_m,
+            self.exp_sliders[2]: self.bounder_f,
+            self.exp_sliders[3]: self.bounder_f
+        }
+        slider_to_x= {
+            self.exp_sliders[0]: 0,
+            self.exp_sliders[1]: 1,
+            self.exp_sliders[2]: 0,
+            self.exp_sliders[3]: 1
+        }
+        for sl in slider_to_bounder.keys():
+            bder = slider_to_bounder[sl]
+            x = slider_to_x[sl]
+            bder.set_exp_probs_bds()
+            left_bds, right_bds = bder.get_exp_probs_bds()
+            a, b = left_bds[1, x], right_bds[1, x]
+            val = sl.value
+            if val < a or val > b:
+                val = a
+            sl.min, sl.value, sl.max = a, val, b
 
     def run_gui(self):
         """
