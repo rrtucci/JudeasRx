@@ -1,4 +1,4 @@
-# JudeasRX
+# JudeasRx
 
 ![JudeasRx screenshot](images/JudeasRx-screenshot.jpg)
 
