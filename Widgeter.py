@@ -497,7 +497,6 @@ class Widgeter:
                     % (left_bds[1, 0], right_bds[1, 0]) +\
                 '<br>%.2f $\leq E_{1|1,m}\leq$ %.2f' \
                     % (left_bds[1, 1], right_bds[1, 1])
-            exp_bds_sign.value += ', '
             left_bds, right_bds = self.bounder_f.get_exp_probs_bds()
             exp_bds_sign.value +=\
                 '<br>%.2f $\leq E_{1|0,f} \leq$ %.2f'\
