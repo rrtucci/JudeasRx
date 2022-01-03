@@ -455,12 +455,17 @@ class Bounder:
             else:
                 assert False
             if self.strong_exo:
+                # when strong exo holds, pns = pn*o1b1 = ps*o0b0
+                left = max(pns_left, pn_left*self.o1b1, ps_left*self.o0b0)
+                right = min(pns_right, pn_right*self.o1b1, ps_right*self.o0b0)
+                pns_left = left
+                pns_right = right
                 if self.o1b1 > 0:
-                    pn_left = pns_left/self.o1b1
-                    pn_right = pn_left
+                    pn_left = left/self.o1b1
+                    pn_right = right/self.o1b1
                 if self.o0b0 > 0:
-                    ps_left = pns_left/self.o0b0
-                    ps_right = ps_left
+                    ps_left = left/self.o0b0
+                    ps_right = right/self.o0b0
             pns_bds = [pns_left, pns_right]
             pn_bds = [pn_left, pn_right]
             ps_bds = [ps_left, ps_right]
