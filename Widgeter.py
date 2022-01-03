@@ -42,12 +42,12 @@ class Widgeter:
             Only Observational Probabilities, no Experimental ones
         pmale : float
             P(gender=male)
-        strong_exogeneity : bool
+        strong_exo : bool
 
         """
         self.only_obs = True
         self.exogeneity = False
-        self.strong_exogeneity = False
+        self.strong_exo = False
         self.monotonicity = False
         self.no_x_to_g = False
         self.bdoor_crit = False
@@ -192,11 +192,14 @@ class Widgeter:
         """
         # just jiggle the pmale slider
         x = self.exp_sliders[4]
+        old_disabled = x.disabled
+        x.disabled = False
         delta = .1
         x.min -= delta
         x.value -= delta
         x.min += delta
         x.value += delta
+        x.disabled = old_disabled
 
     def set_exp_sliders_to_valid_values(self):
         """
@@ -209,26 +212,19 @@ class Widgeter:
         None
 
         """
-        def change(slider, a, b):
-            slider.disabled = True
-            slider.min = a
-            slider.max = b
-            slider.disabled = False
-            slider.value = a
-
         self.bounder_m.set_exp_probs_bds()
         left_bds, right_bds = self.bounder_m.get_exp_probs_bds()
         # set value of E_{1|i,m} for i=0,1
-        for i, slider in zip([0, 1], self.exp_sliders[0:2]):
+        for i, sl in zip([0, 1], self.exp_sliders[0:2]):
             a, b = left_bds[1, i], right_bds[1, i]
-            change(slider, a, b)
+            sl.min, sl.value, sl.max = a, a, b
 
         self.bounder_f.set_exp_probs_bds()
         left_bds, right_bds = self.bounder_f.get_exp_probs_bds()
         # set value of E_{1|i,f} for i=0,1
-        for i, slider in zip([0, 1], self.exp_sliders[2:4]):
+        for i, sl in zip([0, 1], self.exp_sliders[2:4]):
             a, b = left_bds[1, i], right_bds[1, i]
-            change(slider, a, b)
+            sl.min, sl.value, sl.max = a, a, b
 
     def run_gui(self):
         """
@@ -326,9 +322,11 @@ class Widgeter:
 
         def add_but_do(btn):
             if self.only_obs:
+                self.only_obs = False # must call this before anything else
                 self.refresh_slider_colors(obs_green=False)
                 self.set_exp_sliders_to_valid_values()
-                self.only_obs = False
+                self.refresh_plot()
+
         add_but.on_click(add_but_do)
 
         print_but = wid.Button(
@@ -368,22 +366,20 @@ class Widgeter:
             self.exogeneity = new
             self.bounder_m.exogeneity = new
             self.bounder_f.exogeneity = new
-            if not self.only_obs:
-                self.refresh_plot()
+            self.refresh_plot()
         exo_but.observe(exo_but_do, names='value')
 
         strong_exo_but = wid.Checkbox(
-            value=self.strong_exogeneity,
+            value=self.strong_exo,
             description="Strong Exogeneity",
             indent=False)
 
         def strong_exo_but_do(change):
             new = change['new']
-            self.strong_exogeneity = new
-            self.bounder_m.strong_exogeneity = new
-            self.bounder_f.strong_exogeneity = new
-            if not self.only_obs:
-                self.refresh_plot()
+            self.strong_exo = new
+            self.bounder_m.strong_exo = new
+            self.bounder_f.strong_exo = new
+            self.refresh_plot()
         strong_exo_but.observe(strong_exo_but_do, names='value')
         
         mono_but = wid.Checkbox(
@@ -398,8 +394,7 @@ class Widgeter:
             self.bounder_f.monotonicity = new
             # exp slider min, max change
             self.set_exp_sliders_to_valid_values()
-            if not self.only_obs:
-                self.refresh_plot()
+            self.refresh_plot()
         mono_but.observe(mono_but_do, names='value')
 
         no_x_to_g_but = wid.Checkbox(
@@ -410,8 +405,7 @@ class Widgeter:
         def no_x_to_g_but_do(change):
             new = change['new']
             self.no_x_to_g = new
-            if not self.only_obs:
-                self.refresh_plot()
+            self.refresh_plot()
         no_x_to_g_but.observe(no_x_to_g_but_do, names='value')
         
         bdoor_crit_but = wid.Checkbox(
@@ -422,8 +416,7 @@ class Widgeter:
         def bdoor_crit_but_do(change):
             new = change['new']
             self.bdoor_crit = new
-            if not self.only_obs:
-                self.refresh_plot()
+            self.refresh_plot()
         bdoor_crit_but.observe(bdoor_crit_but_do, names='value')
         ate_m_sign = wid.Label()
         ate_f_sign = wid.Label()
@@ -486,19 +479,18 @@ class Widgeter:
             bds_f = self.bounder_f.get_pns3_bds()
             Plotter.plot_pns3_bds(bds_m=bds_m, bds_f=bds_f)
 
-            if self.only_obs:
-                exp_bds_sign.value = "Good choices for Observational " \
-                    "Probabilities! :) They imply<br> the following bounds " \
-                    "for the Experimental Probabilities:"
-                left_bds, right_bds = self.bounder_m.get_exp_probs_bds()
-                exp_bds_sign.value +=\
+            exp_bds_sign.value = "Good choices for Observational " \
+                "Probabilities! :) They imply<br> the following bounds " \
+                "for the Experimental Probabilities:"
+            left_bds, right_bds = self.bounder_m.get_exp_probs_bds()
+            exp_bds_sign.value +=\
                 '<br>%.2f $\leq E_{1|0,m} \leq$ %.2f'\
                     % (left_bds[1, 0], right_bds[1, 0]) +\
                 '<br>%.2f $\leq E_{1|1,m}\leq$ %.2f' \
                     % (left_bds[1, 1], right_bds[1, 1])
-                exp_bds_sign.value += ', '
-                left_bds, right_bds = self.bounder_f.get_exp_probs_bds()
-                exp_bds_sign.value +=\
+            exp_bds_sign.value += ', '
+            left_bds, right_bds = self.bounder_f.get_exp_probs_bds()
+            exp_bds_sign.value +=\
                 '<br>%.2f $\leq E_{1|0,f} \leq$ %.2f'\
                     % (left_bds[1, 0], right_bds[1, 0]) +\
                 '<br>%.2f $\leq E_{1|1,f}\leq$ %.2f' \

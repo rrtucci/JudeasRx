@@ -339,7 +339,7 @@ class Bounder:
 
     def set_pns3_bds(self):
         """
-        Tis method sets the class attribute for the bounds for PNS3 = (PNS,
+        This method sets the class attribute for the bounds for PNS3 = (PNS,
         PN, PS).
 
         Returns
@@ -347,8 +347,7 @@ class Bounder:
         None
 
         """
-        if self.strong_exo:
-            self.exogeneity = True
+        any_exo = self.strong_exo or self.exogeneity
         if self.e_y_bar_x is None:         # no experimental data
             pns_bds = [0, self.get_o_star_star()]
             pn_bds = [0, 1]
@@ -359,7 +358,7 @@ class Bounder:
             o_star_bar_star = self.get_o_star_bar_star()
             o_star_star = self.get_o_star_star()
 
-            if not self.exogeneity and not self.monotonicity:
+            if not any_exo and not self.monotonicity:
                 # pns bounds
                 pns_left = max(
                     0,
@@ -396,7 +395,7 @@ class Bounder:
                         1,
                         (self.e1b1 - self.o11)/self.o00)
 
-            elif self.exogeneity and not self.monotonicity:
+            elif any_exo and not self.monotonicity:
                 # pns bounds
                 pns_left = max(
                     0,
@@ -421,7 +420,7 @@ class Bounder:
                     err_tilde = (self.o0b0 - self.o0b1)/self.o0b0
                     ps_left = max(0, err_tilde)
                     ps_right = min(1, self.o1b1/self.o0b0)
-            elif not self.exogeneity and self.monotonicity:
+            elif not any_exo and self.monotonicity:
                 # pns bounds
                 pns_left = e_star_bar_star - 1
                 pns_right = pns_left
@@ -437,7 +436,7 @@ class Bounder:
                 else:
                     ps_left = (self.e1b1 - py1)/self.o00
                 ps_right = ps_left
-            elif self.exogeneity and self.monotonicity:
+            elif any_exo and self.monotonicity:
                 # pns bounds
                 pns_left = o_star_bar_star - 1
                 pns_right = pns_left
