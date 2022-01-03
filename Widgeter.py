@@ -396,6 +396,8 @@ class Widgeter:
             self.monotonicity = new
             self.bounder_m.monotonicity = new
             self.bounder_f.monotonicity = new
+            # exp slider min, max change
+            self.set_exp_sliders_to_valid_values()
             if not self.only_obs:
                 self.refresh_plot()
         mono_but.observe(mono_but_do, names='value')
