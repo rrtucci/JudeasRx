@@ -83,8 +83,8 @@ class Widgeter:
             ):
         """
         This method is called by wid.interactive() which requires it. Its
-        inputs are all slider values. After doing some housework,
-        this method calls Plotter.plot_pns3_bds().
+        inputs are all the slider values. Using that, it updates the bounder
+        objects for male and female patients.
 
         Parameters
         ----------
