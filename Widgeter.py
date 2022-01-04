@@ -4,6 +4,7 @@ import numpy as np
 import ipywidgets as wid
 from IPython.display import display, clear_output
 from datetime import datetime
+from IPython.utils.capture import capture_output
 
 
 class Widgeter:
@@ -339,16 +340,14 @@ class Widgeter:
 
         add_but.on_click(add_but_do)
 
-        print_but = wid.Button(
-            description='Print',
+        save_but = wid.Button(
+            description='Save',
             button_style='warning',
             layout=wid.Layout(width='50px')
         )
-        out = wid.Output()
-        display(out)
 
-        def print_but_do(btn):
-            with out:
+        def save_but_do(btn):
+            with capture_output() as cap:
                 print("###################################")
                 print("Male:------------------------------")
                 self.bounder_m.print_all_probs(',m')
@@ -364,8 +363,11 @@ class Widgeter:
                     print("ATE_m=", "%.3f" % ate_m)
                     print("ATE_f", "%.3f" % ate_f)
                     print("ATE=", "%.3f" % ate)
+            title = "jrx" + str(str(datetime.now())) + ".txt"
+            with open(title, "w") as f:
+                f.write(cap.stdout)
 
-        print_but.on_click(print_but_do)
+        save_but.on_click(save_but_do)
 
         exo_but = wid.Checkbox(
             value=self.exogeneity,
@@ -450,7 +452,7 @@ class Widgeter:
         dags_box = wid.VBox([no_x_to_g_but, bdoor_crit_but])
         constraints_box = wid.HBox([no_dags_box, dags_box])
         ate_box = wid.VBox([ate_m_sign, ate_f_sign, ate_sign])
-        cmd_box = wid.HBox([print_but, add_but])
+        cmd_box = wid.HBox([save_but, add_but])
         obs_box, self.obs_slider_to_tbox = box_the_sliders(self.obs_sliders)
         # margin and padding are given as a single string with the values in
         # the order of top, right, bottom & left . margin (spacing to other
