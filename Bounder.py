@@ -486,7 +486,7 @@ class Bounder:
         """
         return self.pns3_bds
 
-    def print_exp_probs(self,  st=""):
+    def print_exp_probs(self,  st="", array_format=False):
         """
         Prints the Experimental probabilities E_{y|x}.
 
@@ -495,15 +495,24 @@ class Bounder:
         st : str
             st is used for more explicit labeling of the male and female
             strata.
+        array_format : bool
+            True iff print Experimental Probabilities as numpy arrays
 
         Returns
         -------
         None
 
         """
-        print("E_{y|x" + st + "}=\n", self.e_y_bar_x)
+        if self.e_y_bar_x is not None:
+            if array_format:
+                print("E_{y|x" + st + "}=\n", self.e_y_bar_x)
+            else:
+                print("E_{1|0" + st + "}=", "%.3f" % self.e1b0)
+                print("E_{1|1" + st + "}=", "%.3f" % self.e1b1)
+        else:
+            print("E_{y|x" + st + "}= None")
 
-    def print_obs_probs(self,  st=""):
+    def print_obs_probs(self,  st="", array_format=False):
         """
         Prints the Observational Probabilities O_{y|x} and P(x).
 
@@ -512,14 +521,21 @@ class Bounder:
         st : str
             st is used for more explicit labeling of the male and female
             strata.
+        array_format : bool
+            True iff print Observational Probabilities as numpy arrays
 
         Returns
         -------
         None
 
         """
-        print("O_{y|x" + st + "}=\n", self.o_y_bar_x)
-        print("P_{x" + st + "}=\n", self.px)
+        if array_format:
+            print("O_{y|x" + st + "}=\n", self.o_y_bar_x)
+            print("P_{x" + st + "}=", self.px)
+        else:
+            print("O_{1|0" + st + "}=", "%.3f" % self.o_y_bar_x[1, 0])
+            print("O_{1|1" + st + "}=", "%.3f" % self.o_y_bar_x[1, 1])
+            print("P_{1" + st + "}=", self.px[1])
 
     def print_all_probs(self,  st=""):
         """

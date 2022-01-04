@@ -3,6 +3,7 @@ from Plotter import Plotter
 import numpy as np
 import ipywidgets as wid
 from IPython.display import display, clear_output
+from datetime import datetime
 
 
 class Widgeter:
@@ -363,6 +364,7 @@ class Widgeter:
                     print("ATE_m=", "%.3f" % ate_m)
                     print("ATE_f", "%.3f" % ate_f)
                     print("ATE=", "%.3f" % ate)
+
         print_but.on_click(print_but_do)
 
         exo_but = wid.Checkbox(
