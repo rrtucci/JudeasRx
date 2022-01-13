@@ -5,15 +5,19 @@ np.set_printoptions(precision=3, floatmode="fixed")
 class Bounder:
     def __init__(self, o_y_bar_x, px, e_y_bar_x=None):
         """
-        The theory and notation in this class is explained in the chapter
-        entitled "Personalized Treatment Effects" of my free open source
-        book Bayesuvius. That Bayesuvius chapter is totally based on a paper
-        by Tian and Pearl. I also benefitted from comments by Scott Mueller.
+        The theory and notation in this class is explained in the 2 chapters
+        entitled "Personalized Treatment Effects" and "Personalized Expected
+        Utility" of my free open source book Bayesuvius. Those 2 chapters
+        are totally based on work by Pearl, Tian and later Pearl, Li, Mueller.
 
         https://qbnets.wordpress.com/2020/11/30/my-free-book-bayesuvius-on-bayesian-networks/
 
-        The ultimate goal of this class is to calculate the bounds for PNS,
-        PN and PS, given the probability matrices O_{y|x}, P(x) and E_{y|x}.
+        The main 2 goals of this class are: (1) to calculate the bounds for
+        PNS, PN and PS, given the probability matrices O_{y|x}, P(x) and E_{
+        y|x}. (2) If also a utility function alpha_{y0,y1} is given,
+        to calculate the bounds for the expected utility EU.
+
+        We will use PNS3 to stand for the trio (PNS, PN, PS).
 
         O_{y|x} and P(x) are called the Observational Probabilities (these
         come from a survey), whereas E_{y|x} are called the Experimental
@@ -33,15 +37,18 @@ class Bounder:
 
         1. Only Observational data
 
-        2. Both Observational and Experimental data. For case 2, we allow
-        the user to impose the additional constraints of exogeneity, strong
-        exogeneity and monotonicity.
+        2. Both Observational and Experimental data.
 
-        The more constraints, the tighter the bounds on the trio (PNS, PN,
-        PS), which I like to refer to as PNS3.
+        We also allow the user to impose the additional constraints of
+        exogeneity, strong exogeneity, monotonicity and some specific DAG
+        families.
+
+        The more constraints, the tighter the bounds on PNS3 and EU.
 
         Attributes
         ----------
+        alp_y0_y1 : np.array[shape=(2, 2)]
+            \alpha_{y0, y1}, utility function
         e0b0 : float
             E_{0|0}
         e0b1 : float
@@ -52,6 +59,8 @@ class Bounder:
             E_{1|1}
         e_y_bar_x : np.array[shape=(2, 2)]
             E_{y|x}
+        eu_bds : np.array[shape=(2, )]
+            bounds for EU (expected utility)
         exogeneity : bool
         left_bds_e_y_bar_x : np.array[shape=(2, 2)]
             left (low) bounds for each element of E_{y|x}
@@ -129,6 +138,9 @@ class Bounder:
         self.monotonicity = False
         self.strong_exo = False
 
+        self.alp_y0_y1 = np.zeros(shape=(2,2))
+        self.eu_bds = np.array([-1, 1])
+
     def set_obs_probs(self, o_y_bar_x, px):
         """
         This method refreshes the class attributes with new observational
@@ -183,6 +195,23 @@ class Bounder:
         self.e0b1 = e_y_bar_x[0, 1]
         self.e1b0 = e_y_bar_x[1, 0]
         self.e1b1 = e_y_bar_x[1, 1]
+
+    def set_utility_fun(self, alp_y0_y1):
+        """
+        Sets the utility function \alpha_{y_0, y_1}
+
+        Parameters
+        ----------
+        alp_y0_y1 : np.array[shape=(2, 2)]
+            \alpha_{y_0, y_1}, utility function
+
+        Returns
+        -------
+        None
+
+        """
+        self.alp_y0_y1 = alp_y0_y1
+        assert alp_y0_y1.shape == (2,2)
 
     @staticmethod
     def check_2d_trans_matrix(mat):
@@ -286,6 +315,19 @@ class Bounder:
 
         """
         return self.o00 + self.o11
+
+    def get_sigma(self):
+        """
+        Returns sigma = a01 + a10 - (a00 + a11) where
+        aij= self.alp_y0_y1[i,j]
+
+        Returns
+        -------
+        float
+
+        """
+        return self.alp_y0_y1[0,1] + self.alp_y0_y1[1,0]- (
+            self.alp_y0_y1[1,1] + self.alp_y0_y1[0,0])
 
     def set_exp_probs_bds(self):
         """
@@ -486,6 +528,62 @@ class Bounder:
         """
         return self.pns3_bds
 
+    def set_eu_bds(self):
+        """
+        Sets the class attribute self.eu_bds to the bounds for the expected
+        utility EU.
+
+        Returns
+        -------
+        None
+
+        """
+        if self.e_y_bar_x is None:
+            self.eu_bds = np.array([-1, 1])
+            return
+
+        a00 = self.alp_y0_y1[0, 0]
+        a01 = self.alp_y0_y1[0, 1]
+        a10 = self.alp_y0_y1[1, 0]
+        a11 = self.alp_y0_y1[1, 1]
+
+        if self.monotonicity:
+            eu = a00*self.e0b1 + a11*self.e1b0 + a01*self.get_ate()
+            self.eu_bds = np.array([eu, eu])
+            return
+
+        sigma = a01 + a10 - (a00 + a11)
+
+        p5 = (a11 - a10)*self.e1b1 + a00*self.e0b0 + a10*self.e1b0
+        py0, py1 = self.get_py()
+
+        p1 = (a01 - a00)*self.e1b1 + a00*self.e0b0 + a10*self.e1b0
+        p2 = (a01 - a11)*self.e0b0 + a10*self.e1b0 + a11*self.e1b1
+        p3 = p5 + sigma*self.get_o_star_star()
+        p4 = p1 + sigma*(-self.e1b0 + 1 - self.get_o_star_star())
+        p6 = p1 - sigma*self.e1b0
+        p7 = p5 + sigma*(-self.e1b0 + py1)
+        p8 = p1 - sigma*py1
+
+        low = max(p1, p2, p3, p4)
+        high = min(p5, p6, p7, p8)
+        if low > high:
+            low = -1
+            high = 1
+
+        self.eu_bds = np.array([low, high])
+
+    def get_eu_bds(self):
+        """
+        Returns the bounds for EU (expected utility).
+
+        Returns
+        -------
+        np.array[shape=(2,)]
+
+        """
+        return self.eu_bds
+
     def print_exp_probs(self,  st="", array_format=False):
         """
         Prints the Experimental probabilities E_{y|x}.
@@ -555,6 +653,23 @@ class Bounder:
         self.print_obs_probs(st)
         self.print_exp_probs(st)
 
+    def print_utility_fun(self, st=""):
+        """
+        Prints utility function \alpha_{y0, y1}.
+
+        Parameters
+        ----------
+        st : str
+            st is used for more explicit labeling of the male and female
+            strata.
+
+        Returns
+        -------
+        None
+
+        """
+        print("alpha_{y0,y1}" + st + "=\n", self.alp_y0_y1)
+
     def print_exp_probs_bds(self,  st=""):
         """
         Prints left (low) and right (high) bounds for each element of E_{y|x}.
@@ -567,6 +682,7 @@ class Bounder:
 
         Returns
         -------
+        None
 
         """
         left = self.left_bds_e_y_bar_x
@@ -600,6 +716,24 @@ class Bounder:
                    + " <= " + st1 + st + " <= "
                    + "%.3f" % self.pns3_bds[i, 1])
 
+    def print_eu_bds(self, st=""):
+        """
+        Prints bounds for Expected Utility EU
+
+        Parameters
+        ----------
+        st : str
+            st is used for more explicit labeling of the male and female
+            strata.
+
+        Returns
+        -------
+        None
+
+        """
+        print("%.3f" % self.eu_bds[0]
+              + " <= " + "EU" + st + " <= "
+              + "%.3f" % self.eu_bds[1])
 
 if __name__ == "__main__":
     def main():
@@ -610,8 +744,12 @@ if __name__ == "__main__":
         o_y_bar_x_f = np.array([[.3, .73],
                                [.7, .27]])
         px_f = np.array([.3, .7])
+        alp_y0_y1_f = np.array([[2, 4],
+                              [-3, 7]])
         f = Bounder(o_y_bar_x_f, px_f, e_y_bar_x=e_y_bar_x_f)
+        f.set_utility_fun(alp_y0_y1_f)
         f.print_all_probs(",f")
+        f.print_utility_fun("_f")
         print("---------------------------")
         print("Check exp. data is within bds imposed by obs. data:")
         f.set_exp_probs_bds()
@@ -619,6 +757,9 @@ if __name__ == "__main__":
         print("---------------------------")
         f.set_pns3_bds()
         f.print_pns3_bds("_f")
+        print("---------------------------")
+        f.set_eu_bds()
+        f.print_eu_bds("_f")
 
         print("MALE--------------------------")
         print("input probabilities obtained from exp. and obs. data:")
@@ -627,9 +768,12 @@ if __name__ == "__main__":
         o_y_bar_x_m = np.array([[.3, .3],
                                 [.7, .7]])
         px_m = np.array([.3, .7])
-
+        alp_y0_y1_m = np.array([[2, 4],
+                              [-3, 7]])
         m = Bounder(o_y_bar_x_m, px_m, e_y_bar_x=e_y_bar_x_m)
+        m.set_utility_fun(alp_y0_y1_m)
         m.print_all_probs(",m")
+        m.print_utility_fun("_m")
         print("---------------------------")
         print("Check exp. data is within bds imposed by obs. data:")
         m.set_exp_probs_bds()
@@ -637,5 +781,8 @@ if __name__ == "__main__":
         print("---------------------------")
         m.set_pns3_bds()
         m.print_pns3_bds("_m")
+        print("---------------------------")
+        m.set_eu_bds()
+        m.print_eu_bds("_m")
 
     main()

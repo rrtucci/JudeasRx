@@ -17,6 +17,12 @@ class Widgeter:
 
         Attributes
         ----------
+        alp_slider_to_latex : dict[wid.FloatSlider, str]
+            dictionary mapping alpha sliders to LaTex strings
+        alp_slider_to_tbox : dict[wid.FloatSlider, wid.BoundedFloatText]
+            dictionary mapping alpha sliders to their text boxes
+        alp_sliders : List[wid.FloatSlider]
+            list of alpha sliders
         bdoor_crit : bool
             True iff backdoor criterion for node G relative to (X,Y) is
             satisfied
@@ -25,8 +31,8 @@ class Widgeter:
         bounder_m : Bounder
             Bounder object for males
         exogeneity : bool
-        exp_sliders_to_latex : dict[wid.FloatSlider, str]
-            dictionary mapping experimental sliders to a LaTex string
+        exp_slider_to_latex : dict[wid.FloatSlider, str]
+            dictionary mapping experimental sliders to a LaTex strings
         exp_slider_to_tbox : dict[wid.FloatSlider, wid.BoundedFloatText]
             dictionary mapping experimental sliders to their text boxes
         exp_sliders : List[wid.FloatSlider]
@@ -35,7 +41,7 @@ class Widgeter:
         no_x_to_g : bool
             True iff G is not a descendant of X
         obs_sliders_to_latex : dict[wid.FloatSlider, str]
-            dictionary mapping observational sliders to a LaTex string
+            dictionary mapping observational sliders to a LaTex strings
         obs_slider_to_tbox : dict[wid.FloatSlider, wid.BoundedFloatText]
             dictionary mapping observational sliders to their text boxes
         obs_sliders : List[wid.FloatSlider]
@@ -68,12 +74,15 @@ class Widgeter:
         
         self.obs_sliders = []
         self.exp_sliders = []
+        self.alp_sliders = []
 
         self.obs_slider_to_tbox = {}
         self.exp_slider_to_tbox = {}
+        self.alp_slider_to_tbox = {}
 
         self.obs_slider_to_latex = {}
         self.exp_slider_to_latex = {}
+        self.alp_slider_to_latex = {}
 
     def refresh_bounders_using_slider_vals(
             self,
@@ -81,7 +90,8 @@ class Widgeter:
             o1b0_f, o1b1_f, px1_f,
             e1b0_m, e1b1_m,
             e1b0_f, e1b1_f,
-            pmale
+            pmale,
+            alp00, alp01, alp10, alp11
             ):
         """
         This method is called by wid.interactive() which requires it. Its
@@ -112,6 +122,14 @@ class Widgeter:
             E_{1|1,f}
         pmale : float
             P(g=male)
+        alp00 : float
+            \alpha_{0,0}, utility function component
+        alp01 : float
+            \alpha_{0,1}, utility function component
+        alp10 : float
+            \alpha_{1,0}, utility function component
+        alp11 : float
+            \alpha_{1,1}, utility function component
 
         Returns
         -------
@@ -144,14 +162,21 @@ class Widgeter:
 
         self.bounder_m.set_pns3_bds()
         self.bounder_f.set_pns3_bds()
+        
+        alp_y0_y1 = np.array([[alp00, alp01],
+                             [alp10, alp11]])
+        self.bounder_m.set_utility_fun(alp_y0_y1)
+        self.bounder_f.set_utility_fun(alp_y0_y1)
+        self.bounder_m.set_eu_bds()
+        self.bounder_f.set_eu_bds()
 
     def refresh_slider_colors(self, obs_green):
         """
         This method toggles the colors and disabled status (green/red for
-        enabled/disabled) of the sliders for Observational Probabilities and
-        the sliders for Experimental Probabilities. In addition, it toggles
-        the disabled status of the text boxes that are attached to each of
-        those sliders.
+        enabled/disabled) of the sliders for Observational Probabilities,
+        for Experimental Probabilities, and for alphas. In addition,
+        it toggles the disabled status of the text boxes that are attached
+        to each of those sliders.
 
         Parameters
         ----------
@@ -180,7 +205,11 @@ class Widgeter:
             self.exp_slider_to_tbox[x].disabled = obs_green
             x.description = color_it(not obs_green,
                                      self.exp_slider_to_latex[x])
-
+        for x in self.alp_sliders:
+            x.disabled = obs_green
+            self.alp_slider_to_tbox[x].disabled = obs_green
+            x.description = color_it(not obs_green,
+                                     self.alp_slider_to_latex[x])
     def refresh_plot(self):
         """
         This method is a clever way of inducing the method wid.interactive()
@@ -242,12 +271,13 @@ class Widgeter:
         This is the main method of this class and the only one meant for
         external use. It draws a GUI.
 
-        The GUI has 11 sliders, 6 sliders for Observational Probabilities
-        and 5 sliders for Experimental Probabilities. Each slider has a text
-        box attached to it which can be used to enter input by typing
-        numbers instead of moving the slider. In addition, the GUI has
-        several clickable control buttons and check boxes and one disabled
-        text box that gives info about the current status of the calculations.
+        The GUI has 6 sliders for Observational Probabilities, 5 sliders for
+        Experimental Probabilities, and 4 sliders for utility function
+        components (alphas). Each slider has a text box attached to it which
+        can be used to enter input by typing numbers instead of moving the
+        slider. In addition, the GUI has several clickable control buttons
+        and check boxes and one disabled text box that gives info about the
+        current status of the calculations.
 
         Returns
         -------
@@ -294,6 +324,19 @@ class Widgeter:
         self.exp_sliders = [*exp_m_sliders,
                             *exp_f_sliders,
                             pmale_slider]
+        
+        alp_slider_params = dict(
+            min=-1,
+            max=1,
+            value=0,
+            step=.001,
+            orientation='vertical')
+        alp00_slider = wid.widgets.FloatSlider(**alp_slider_params)
+        alp01_slider = wid.widgets.FloatSlider(**alp_slider_params)
+        alp10_slider = wid.widgets.FloatSlider(**alp_slider_params)
+        alp11_slider = wid.widgets.FloatSlider(**alp_slider_params)
+        self.alp_sliders = [alp00_slider, alp01_slider, 
+                alp10_slider, alp11_slider]
 
         self.obs_slider_to_latex = {
             obs_m_sliders[0]: 'O_{1|0,m}',
@@ -310,6 +353,12 @@ class Widgeter:
             exp_f_sliders[0]: 'E_{1|0,f}',
             exp_f_sliders[1]: 'E_{1|1,f}',
             pmale_slider: 'P_m'
+        }
+        self.alp_slider_to_latex = {
+            alp00_slider: r'\alpha_{0,0}',
+            alp01_slider: r'\alpha_{0,1}',
+            alp10_slider: r'\alpha_{1,0}',
+            alp11_slider: r'\alpha_{1,1}'
         }
 
         header = wid.HTMLMath("Enter Observational Data from a survey." +
@@ -349,20 +398,27 @@ class Widgeter:
         def save_but_do(btn):
             with capture_output() as cap:
                 print("###################################")
-                print("Male:------------------------------")
+                print("inputs:----------------------------")
                 self.bounder_m.print_all_probs(',m')
-                self.bounder_m.print_pns3_bds('_m')
-                print("Female:----------------------------")
                 self.bounder_f.print_all_probs(',f')
-                self.bounder_f.print_pns3_bds('_f')
+                print("P_m=", self.pmale)
+                self.bounder_m.print_utility_fun('_m')
+                self.bounder_f.print_utility_fun('_f')
                 print("ATE:-------------------------------")
-                ate_f = self.bounder_f.get_ate()
                 ate_m = self.bounder_m.get_ate()
+                ate_f = self.bounder_f.get_ate()               
                 if ate_m is not None and ate_f is not None:
                     ate = ate_m * self.pmale + ate_f * (1 - self.pmale)
                     print("ATE_m=", "%.3f" % ate_m)
                     print("ATE_f", "%.3f" % ate_f)
                     print("ATE=", "%.3f" % ate)
+                print("PNS3:------------------------------")
+                self.bounder_m.print_pns3_bds('_m')
+                self.bounder_f.print_pns3_bds('_f')
+                print("EU:--------------------------------")
+                self.bounder_m.print_eu_bds('_m')
+                self.bounder_f.print_eu_bds('_f')
+
             title = "jrx" + str(str(datetime.now())) + ".txt"
             with open(title, "w") as f:
                 f.write(cap.stdout)
@@ -372,7 +428,8 @@ class Widgeter:
         exo_but = wid.Checkbox(
             value=self.exogeneity,
             description="Exogeneity",
-            indent=False)
+            indent=False,
+            layout=wid.Layout(width='150px'))
 
         def exo_but_do(change):
             new = change['new']
@@ -385,7 +442,8 @@ class Widgeter:
         strong_exo_but = wid.Checkbox(
             value=self.strong_exo,
             description="Strong Exogeneity",
-            indent=False)
+            indent=False,
+            layout=wid.Layout(width='150px'))
 
         def strong_exo_but_do(change):
             new = change['new']
@@ -398,7 +456,8 @@ class Widgeter:
         mono_but = wid.Checkbox(
             value=self.monotonicity,
             description="Monotonicity",
-            indent=False)
+            indent=False,
+            layout=wid.Layout(width='150px'))
 
         def mono_but_do(change):
             new = change['new']
@@ -465,32 +524,43 @@ class Widgeter:
         exp_box = wid.HBox([exp_box],
             layout=wid.Layout(border='solid'))
         exp_margin = wid.VBox([constraints_box, ate_box])
+        alp_box, self.alp_slider_to_tbox = box_the_sliders(self.alp_sliders)
+        alp_box = wid.HBox([alp_box],
+            layout=wid.Layout(border='solid'))
+
         all_boxes = wid.VBox([
             header,
             cmd_box,
             obs_box,
-            wid.HBox([exp_box, exp_margin])
+            wid.HBox([exp_box, alp_box, exp_margin])
         ])
 
         def fun(o1b0_m_slider, o1b1_m_slider, px1_m_slider,
                 o1b0_f_slider, o1b1_f_slider, px1_f_slider,
                 e1b0_m_slider, e1b1_m_slider,
                 e1b0_f_slider, e1b1_f_slider,
-                pmale_slider
+                pmale_slider,
+                alp00_slider, alp01_slider, alp10_slider, alp11_slider
                 ):
             self.refresh_bounders_using_slider_vals(
                 o1b0_m_slider, o1b1_m_slider, px1_m_slider,
                 o1b0_f_slider, o1b1_f_slider, px1_f_slider,
                 e1b0_m_slider, e1b1_m_slider,
                 e1b0_f_slider, e1b1_f_slider,
-                pmale_slider
+                pmale_slider,
+                alp00_slider, alp01_slider, alp10_slider, alp11_slider
             )
             # refresh self.pmale using slider value
             self.pmale = pmale_slider
 
             bds_m = self.bounder_m.get_pns3_bds()
             bds_f = self.bounder_f.get_pns3_bds()
-            Plotter.plot_pns3_bds(bds_m=bds_m, bds_f=bds_f)
+
+            eu_bds_m = self.bounder_m.get_eu_bds()
+            eu_bds_f = self.bounder_f.get_eu_bds()
+
+            Plotter.plot_all(bds_m=bds_m, bds_f=bds_f, eu_bds_m=eu_bds_m,
+                             eu_bds_f=eu_bds_f)
 
             exp_bds_sign.value = "Good choices for Observational " \
                 "Probabilities! :) They imply<br> the following bounds " \
@@ -526,9 +596,13 @@ class Widgeter:
             'e1b1_m_slider': e1b1_m_slider,
             'e1b0_f_slider': e1b0_f_slider,
             'e1b1_f_slider': e1b1_f_slider,
-            'pmale_slider': pmale_slider
+            'pmale_slider': pmale_slider,
+            'alp00_slider': alp00_slider,
+            'alp01_slider': alp01_slider,
+            'alp10_slider': alp10_slider,
+            'alp11_slider': alp11_slider,
         }
-        plot = wid.interactive_output(fun, slider_dict)
+        plots = wid.interactive_output(fun, slider_dict)
         # interactive_plot.layout.height = '800px'
         self.refresh_slider_colors(obs_green=True)
-        display(all_boxes, plot)
+        display(all_boxes, plots)
