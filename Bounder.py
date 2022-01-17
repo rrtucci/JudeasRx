@@ -3,107 +3,121 @@ np.set_printoptions(precision=3, floatmode="fixed")
 
 
 class Bounder:
+    """
+    The theory and notation in this class is explained in the 2 chapters
+    entitled "Personalized Treatment Effects" and "Personalized Expected
+    Utility" of my free open source book Bayesuvius. Those 2 chapters
+    are totally based on work by Pearl, Tian and later Pearl, Li, Mueller.
+
+    https://qbnets.wordpress.com/2020/11/30/my-free-book-bayesuvius-on-bayesian-networks/
+
+    The main 2 goals of this class are: (1) to calculate the bounds for
+    PNS, PN and PS, given the probability matrices O_{y|x}, P(x) and E_{
+    y|x}. (2) If also a utility function alpha_{y0,y1} is given,
+    to calculate the bounds for the expected utility EU.
+
+    We will use PNS3 to stand for the trio (PNS, PN, PS).
+
+    O_{y|x} and P(x) are called the Observational Probabilities (these
+    come from a survey), whereas E_{y|x} are called the Experimental
+    Probabilities (these come from a RCT).
+
+    Each column of  O_{y|x}, P(x) and E_{y|x} sums to 1, so we chose as
+    independent dofs (degrees of freedom) the probabilties O_{1|0},
+    O_{1|1}, P(x=1), E_{1|0} and E_{1|1}.
+
+    A given O_{y|x} imposes bounds on E_{y|x} that must be obeyed for
+    consistency. This class also calculates those bounds.
+
+    In this app, we consider a Bounder object bounder_m for males,
+    and a Bounder object bounder_f for females.
+
+    In this app, we consider two cases:
+
+    1. Only Observational data
+
+    2. Both Observational and Experimental data.
+
+    We also allow the user to impose the additional constraints of
+    exogeneity, strong exogeneity, monotonicity and some specific DAG
+    families.
+
+    The more constraints, the tighter the bounds on PNS3 and EU.
+
+    Attributes
+    ----------
+    alp_y0_y1 : np.array
+        [shape=(2, 2)]
+        \alpha_{y0, y1}, utility function
+    e0b0 : None, float
+        E_{0|0}
+    e0b1 : None, float
+        E_{0|1}
+    e1b0 : None, float
+        E_{1|0}
+    e1b1 : None, float
+        E_{1|1}
+    e_y_bar_x : None, np.array
+        [shape=(2, 2)]
+        E_{y|x}
+    eu_bds : np.array
+        [shape=(2, )]
+        bounds for EU (expected utility)
+    exogeneity : bool
+    left_bds_e_y_bar_x : np.array
+        [shape=(2, 2)]
+        left (low) bounds for each element of E_{y|x}
+    monotonicity : bool
+    o00 : float
+        O_{0,0}
+    o01 : float
+        O_{0,1}
+    o0b0 : float
+        O_{0|0}
+    o0b1 : float
+        O_{0|1}
+    o10 : float
+        O_{1,0}
+    o11 : float
+        O_{1,1}
+    o1b0 : float
+        O_{1|0}
+    o1b1 : float
+        O_{1|1}
+    o_y_bar_x : np.array
+        [shape=(2, 2)]
+        O_{y|x}
+    pns3_bds : np.array
+        [shape =(3, 2)]
+        [[PNS_low, PNS_high],
+        [PN_low, PN_high],
+        [PS_low, PS_high]]
+    px : float
+        P(x)
+    px0 : float
+        P(x=0)
+    px1 : float
+        P(x=1)
+    right_bds_e_y_bar_x : np.array
+        [shape=(2, 2)]
+        right (high) bounds for each element of E_{y|x}
+    strong_exo : bool
+
+    """
     def __init__(self, o_y_bar_x, px, e_y_bar_x=None):
         """
-        The theory and notation in this class is explained in the 2 chapters
-        entitled "Personalized Treatment Effects" and "Personalized Expected
-        Utility" of my free open source book Bayesuvius. Those 2 chapters
-        are totally based on work by Pearl, Tian and later Pearl, Li, Mueller.
-
-        https://qbnets.wordpress.com/2020/11/30/my-free-book-bayesuvius-on-bayesian-networks/
-
-        The main 2 goals of this class are: (1) to calculate the bounds for
-        PNS, PN and PS, given the probability matrices O_{y|x}, P(x) and E_{
-        y|x}. (2) If also a utility function alpha_{y0,y1} is given,
-        to calculate the bounds for the expected utility EU.
-
-        We will use PNS3 to stand for the trio (PNS, PN, PS).
-
-        O_{y|x} and P(x) are called the Observational Probabilities (these
-        come from a survey), whereas E_{y|x} are called the Experimental
-        Probabilities (these come from a RCT).
-
-        Each column of  O_{y|x}, P(x) and E_{y|x} sums to 1, so we chose as
-        independent dofs (degrees of freedom) the probabilties O_{1|0},
-        O_{1|1}, P(x=1), E_{1|0} and E_{1|1}.
-
-        A given O_{y|x} imposes bounds on E_{y|x} that must be obeyed for
-        consistency. This class also calculates those bounds.
-
-        In this app, we consider a Bounder object bounder_m for males,
-        and a Bounder object bounder_f for females.
-
-        In this app, we consider two cases:
-
-        1. Only Observational data
-
-        2. Both Observational and Experimental data.
-
-        We also allow the user to impose the additional constraints of
-        exogeneity, strong exogeneity, monotonicity and some specific DAG
-        families.
-
-        The more constraints, the tighter the bounds on PNS3 and EU.
-
-        Attributes
-        ----------
-        alp_y0_y1 : np.array[shape=(2, 2)]
-            \alpha_{y0, y1}, utility function
-        e0b0 : float
-            E_{0|0}
-        e0b1 : float
-            E_{0|1}
-        e1b0 : float
-            E_{1|0}
-        e1b1 : float
-            E_{1|1}
-        e_y_bar_x : np.array[shape=(2, 2)]
-            E_{y|x}
-        eu_bds : np.array[shape=(2, )]
-            bounds for EU (expected utility)
-        exogeneity : bool
-        left_bds_e_y_bar_x : np.array[shape=(2, 2)]
-            left (low) bounds for each element of E_{y|x}
-        monotonicity : bool
-        o00 : float
-            O_{0,0}
-        o01 : float
-            O_{0,1}
-        o0b0 : float
-            O_{0|0}
-        o0b1 : float
-            O_{0|1}
-        o10 : float
-            O_{1,0}
-        o11 : float
-            O_{1,1}
-        o1b0 : float
-            O_{1|0}
-        o1b1 : float
-            O_{1|1}
-        o_y_bar_x : np.array[shape=(2, 2)]
-            O_{y|x}
-        pns3_bds : np.array[shape =(3, 2)]
-            [[PNS_low, PNS_high],
-            [PN_low, PN_high],
-            [PS_low, PS_high]]
-        px : float
-            P(x)
-        px0 : float
-            P(x=0)
-        px1 : float
-            P(x=1)
-        right_bds_e_y_bar_x : np.array[shape=(2, 2)]
-            right (high) bounds for each element of E_{y|x}
-        strong_exo : bool
+        Constructor
 
         Parameters
         ----------
-        o_y_bar_x : np.array[shape=(2, 2)]
+        o_y_bar_x : np.array
+            [shape=(2, 2)]
             O_{y|x}
-        px : np.array[shape=(2, )]
+        px : np.array
+            [shape=(2, )]
             P(x)
-        e_y_bar_x : np.array[shape=(2, )], None
+        e_y_bar_x : None, np.array
+            [shape=(2, )]
             E_{y|x}
         """
 
@@ -138,7 +152,7 @@ class Bounder:
         self.monotonicity = False
         self.strong_exo = False
 
-        self.alp_y0_y1 = np.zeros(shape=(2,2))
+        self.alp_y0_y1 = np.zeros(shape=(2, 2))
         self.eu_bds = np.array([-1, 1])
 
     def set_obs_probs(self, o_y_bar_x, px):
@@ -148,9 +162,11 @@ class Bounder:
 
         Parameters
         ----------
-        o_y_bar_x : np.array[shape=(2, 2)]
+        o_y_bar_x : np.array
+            [shape=(2, 2)]
             O_{y|x}
-        px : np.array[shape=(2, )]
+        px : np.array
+            [shape=(2, )]
             P(x)
 
         Returns
@@ -181,7 +197,8 @@ class Bounder:
 
         Parameters
         ----------
-        e_y_bar_x : np.array[shape=(2, 2)]
+        e_y_bar_x : np.array
+            [shape=(2, 2)]
             E_{y|x}
 
         Returns
@@ -198,11 +215,13 @@ class Bounder:
 
     def set_utility_fun(self, alp_y0_y1):
         """
-        Sets the utility function \alpha_{y_0, y_1}
+        Sets the utility function \alpha_{y_0, y_1}. It checks that all 4
+        entries of that 2 x 2 matrix are in the interval [-1, 1].
 
         Parameters
         ----------
-        alp_y0_y1 : np.array[shape=(2, 2)]
+        alp_y0_y1 : np.array
+            [shape=(2, 2)]
             \alpha_{y_0, y_1}, utility function
 
         Returns
@@ -210,8 +229,9 @@ class Bounder:
         None
 
         """
+        assert alp_y0_y1.shape == (2, 2)
+        assert (alp_y0_y1 >= -1).all() and (alp_y0_y1 <= 1).all()
         self.alp_y0_y1 = alp_y0_y1
-        assert alp_y0_y1.shape == (2,2)
 
     @staticmethod
     def check_2d_trans_matrix(mat):
@@ -220,7 +240,8 @@ class Bounder:
 
         Parameters
         ----------
-        mat : np.array[shape=(2, 2)]
+        mat : np.array
+            [shape=(2, 2)]
 
         Returns
         -------
@@ -240,14 +261,13 @@ class Bounder:
 
         Parameters
         ----------
-        vec : np.array[shape=(2, )]
+        vec : np.array
 
         Returns
         -------
         None
 
         """
-        assert vec.shape == (2, )
         assert (0 <= vec).all()
         assert (vec <= 1).all()
         assert np.abs(sum(vec) - 1) < 1e-5
@@ -326,8 +346,21 @@ class Bounder:
         float
 
         """
-        return self.alp_y0_y1[0,1] + self.alp_y0_y1[1,0]- (
-            self.alp_y0_y1[1,1] + self.alp_y0_y1[0,0])
+        return self.alp_y0_y1[0, 1] + self.alp_y0_y1[1, 0] - (
+            self.alp_y0_y1[1, 1] + self.alp_y0_y1[0, 0])
+
+    def get_exp_probs_bds(self):
+        """
+        Returns left (low) and right (high) bounds of e_y_bar_x
+
+        Returns
+        -------
+        np.array, np.array
+            [shape=(2, 2)], [shape=(2, 2)]
+            self.left_bds_e_y_bar_x,  self.right_bds_e_y_bar_x
+
+        """
+        return self.left_bds_e_y_bar_x, self.right_bds_e_y_bar_x
 
     def set_exp_probs_bds(self):
         """
@@ -367,17 +400,37 @@ class Bounder:
             left[0, 0] = py0
             right[0, 0] = 1 - self.o01
 
-    def get_exp_probs_bds(self):
+    def check_exp_prob_bds_satisfied(self):
         """
-        Returns left (low) and right (high) bounds of e_y_bar_x
+        Checks that e_y_bar_x satisfies the experimental probability bounds.
 
         Returns
         -------
-        np.array[shape=(2, 2)], np.array[shape=(2, 2)]
-            self.left_bds_e_y_bar_x,  self.right_bds_e_y_bar_x
+        None
 
         """
-        return self.left_bds_e_y_bar_x, self.right_bds_e_y_bar_x
+        low, high = self.get_exp_probs_bds()
+        if self.e_y_bar_x is None or \
+                (low > self.e_y_bar_x).all() or \
+                (self.e_y_bar_x > high).all():
+            print("Experimental probability bounds are not satisfied")
+            self.print_exp_probs_bds()
+            assert False
+
+    def get_pns3_bds(self):
+        """
+        Returns PNS3 bounds.
+
+        Returns
+        -------
+        np.array
+            [shape=(3, 2)]
+            [[PNS_low, PNS_high],
+            [PN_low, PN_high],
+            [PS_low, PS_high]]
+
+        """
+        return self.pns3_bds
 
     def set_pns3_bds(self):
         """
@@ -514,19 +567,17 @@ class Bounder:
 
         self.pns3_bds = np.array([pns_bds, pn_bds, ps_bds])
 
-    def get_pns3_bds(self):
+    def get_eu_bds(self):
         """
-        Returns PNS3 bounds.
+        Returns the bounds for EU (expected utility).
 
         Returns
         -------
-         np.array[shape=(3, 2)]
-            [[PNS_low, PNS_high],
-            [PN_low, PN_high],
-            [PS_low, PS_high]]
+        np.array
+            [shape=(2,)]
 
         """
-        return self.pns3_bds
+        return self.eu_bds
 
     def set_eu_bds(self):
         """
@@ -572,17 +623,6 @@ class Bounder:
             high = 1
 
         self.eu_bds = np.array([low, high])
-
-    def get_eu_bds(self):
-        """
-        Returns the bounds for EU (expected utility).
-
-        Returns
-        -------
-        np.array[shape=(2,)]
-
-        """
-        return self.eu_bds
 
     def print_exp_probs(self,  st="", array_format=False):
         """
@@ -687,14 +727,11 @@ class Bounder:
         """
         left = self.left_bds_e_y_bar_x
         right = self.right_bds_e_y_bar_x
-        mid = self.e_y_bar_x
-        for x in range(2):
-            for y in range(2):
-                print("E_{" + str(y) + "|" + str(x) + st + "}: " +
-                        "%.3f <= %.3f <= %.3f"
-                        % (left[y, x],
-                        mid[y, x],
-                        right[y, x]))
+        for y in range(2):
+            for x in range(2):
+                name = "E_{" + str(y) + "|" + str(x) + st + "}"
+                print("%.3f <= %s <= %.3f"
+                    % (left[y, x], name, right[y, x]))
 
     def print_pns3_bds(self,  st=""):
         """
@@ -713,8 +750,8 @@ class Bounder:
         """
         for i,  st1 in zip([0, 1, 2], ['PNS', ' PN', ' PS']):
             print("%.3f" % self.pns3_bds[i, 0]
-                   + " <= " + st1 + st + " <= "
-                   + "%.3f" % self.pns3_bds[i, 1])
+                + " <= " + st1 + st + " <= "
+                + "%.3f" % self.pns3_bds[i, 1])
 
     def print_eu_bds(self, st=""):
         """
@@ -735,6 +772,7 @@ class Bounder:
               + " <= " + "EU" + st + " <= "
               + "%.3f" % self.eu_bds[1])
 
+
 if __name__ == "__main__":
     def main():
         print("FEMALE-----------------------")
@@ -745,7 +783,7 @@ if __name__ == "__main__":
                                [.7, .27]])
         px_f = np.array([.3, .7])
         alp_y0_y1_f = np.array([[2, 4],
-                              [-3, 7]])
+                                [-3, 7]])
         f = Bounder(o_y_bar_x_f, px_f, e_y_bar_x=e_y_bar_x_f)
         f.set_utility_fun(alp_y0_y1_f)
         f.print_all_probs(",f")
@@ -769,7 +807,7 @@ if __name__ == "__main__":
                                 [.7, .7]])
         px_m = np.array([.3, .7])
         alp_y0_y1_m = np.array([[2, 4],
-                              [-3, 7]])
+                                [-3, 7]])
         m = Bounder(o_y_bar_x_m, px_m, e_y_bar_x=e_y_bar_x_m)
         m.set_utility_fun(alp_y0_y1_m)
         m.print_all_probs(",m")

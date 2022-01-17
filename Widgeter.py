@@ -1,5 +1,5 @@
 from Bounder import Bounder
-from Plotter import Plotter
+from Plotter_2z import Plotter_2z
 import numpy as np
 import ipywidgets as wid
 from IPython.display import display, clear_output
@@ -8,49 +8,53 @@ from IPython.utils.capture import capture_output
 
 
 class Widgeter:
+    """
+    The main method of this class and the only one meant for external
+    use is run_gui(). This method runs a GUI (Graphical User Interface)
+    as a cell in a Jupyter notebook. The controls of the GUI are
+    implemented using the library ipywidgets.
+
+    Attributes
+    ----------
+    alp_slider_to_latex : dict[wid.FloatSlider, str]
+        dictionary mapping alpha sliders to LaTex strings
+    alp_slider_to_tbox : dict[wid.FloatSlider, wid.BoundedFloatText]
+        dictionary mapping alpha sliders to their text boxes
+    alp_sliders : List[wid.FloatSlider]
+        list of alpha sliders
+    bdoor_crit : bool
+        True iff backdoor criterion for node G relative to (X,Y) is
+        satisfied
+    bounder_f : Bounder
+        Bounder object for females
+    bounder_m : Bounder
+        Bounder object for males
+    exogeneity : bool
+    exp_slider_to_latex : dict[wid.FloatSlider, str]
+        dictionary mapping experimental sliders to a LaTex strings
+    exp_slider_to_tbox : dict[wid.FloatSlider, wid.BoundedFloatText]
+        dictionary mapping experimental sliders to their text boxes
+    exp_sliders : List[wid.FloatSlider]
+        list of experimental sliders
+    monotonicity : bool
+    no_x_to_g : bool
+        True iff G is not a descendant of X
+    obs_sliders_to_latex : dict[wid.FloatSlider, str]
+        dictionary mapping observational sliders to a LaTex strings
+    obs_slider_to_tbox : dict[wid.FloatSlider, wid.BoundedFloatText]
+        dictionary mapping observational sliders to their text boxes
+    obs_sliders : List[wid.FloatSlider]
+        list of observational sliders
+    only_obs : bool
+        Only Observational Probabilities, no Experimental ones
+    pmale : float
+        P(gender=male)
+    strong_exo : bool
+
+    """
     def __init__(self):
         """
-        The main method of this class and the only one meant for external
-        use is run_gui(). This method runs a GUI (Graphical User Interface)
-        as a cell in a Jupyter notebook. The controls of the GUI are
-        implemented using the library ipywidgets.
-
-        Attributes
-        ----------
-        alp_slider_to_latex : dict[wid.FloatSlider, str]
-            dictionary mapping alpha sliders to LaTex strings
-        alp_slider_to_tbox : dict[wid.FloatSlider, wid.BoundedFloatText]
-            dictionary mapping alpha sliders to their text boxes
-        alp_sliders : List[wid.FloatSlider]
-            list of alpha sliders
-        bdoor_crit : bool
-            True iff backdoor criterion for node G relative to (X,Y) is
-            satisfied
-        bounder_f : Bounder
-            Bounder object for females
-        bounder_m : Bounder
-            Bounder object for males
-        exogeneity : bool
-        exp_slider_to_latex : dict[wid.FloatSlider, str]
-            dictionary mapping experimental sliders to a LaTex strings
-        exp_slider_to_tbox : dict[wid.FloatSlider, wid.BoundedFloatText]
-            dictionary mapping experimental sliders to their text boxes
-        exp_sliders : List[wid.FloatSlider]
-            list of experimental sliders
-        monotonicity : bool
-        no_x_to_g : bool
-            True iff G is not a descendant of X
-        obs_sliders_to_latex : dict[wid.FloatSlider, str]
-            dictionary mapping observational sliders to a LaTex strings
-        obs_slider_to_tbox : dict[wid.FloatSlider, wid.BoundedFloatText]
-            dictionary mapping observational sliders to their text boxes
-        obs_sliders : List[wid.FloatSlider]
-            list of observational sliders        
-        only_obs : bool
-            Only Observational Probabilities, no Experimental ones
-        pmale : float
-            P(gender=male)
-        strong_exo : bool
+        Constructor
 
         """
         self.only_obs = True
@@ -210,6 +214,7 @@ class Widgeter:
             self.alp_slider_to_tbox[x].disabled = obs_green
             x.description = color_it(not obs_green,
                                      self.alp_slider_to_latex[x])
+
     def refresh_plot(self):
         """
         This method is a clever way of inducing the method wid.interactive()
@@ -243,13 +248,13 @@ class Widgeter:
         None
 
         """
-        slider_to_bounder= {
+        slider_to_bounder = {
             self.exp_sliders[0]: self.bounder_m,
             self.exp_sliders[1]: self.bounder_m,
             self.exp_sliders[2]: self.bounder_f,
             self.exp_sliders[3]: self.bounder_f
         }
-        slider_to_x= {
+        slider_to_x = {
             self.exp_sliders[0]: 0,
             self.exp_sliders[1]: 1,
             self.exp_sliders[2]: 0,
@@ -378,11 +383,11 @@ class Widgeter:
             button_style='danger',
             layout=wid.Layout(width='200px')
         )
-        exp_bds_sign = wid.HTMLMath()
+        exp3_bds_sign = wid.HTMLMath()
 
         def add_but_do(btn):
             if self.only_obs:
-                self.only_obs = False # must call this before anything else
+                self.only_obs = False  # must call this before anything else
                 self.refresh_slider_colors(obs_green=False)
                 self.set_exp_sliders_to_valid_values()
                 self.refresh_plot()
@@ -519,7 +524,7 @@ class Widgeter:
         obs_box = wid.HBox([obs_box],
             layout=wid.Layout(border='solid',
                               margin='5px 5px 5px 5px'))
-        obs_box = wid.HBox([obs_box, exp_bds_sign])
+        obs_box = wid.HBox([obs_box, exp3_bds_sign])
         exp_box, self.exp_slider_to_tbox = box_the_sliders(self.exp_sliders)
         exp_box = wid.HBox([exp_box],
             layout=wid.Layout(border='solid'))
@@ -553,26 +558,26 @@ class Widgeter:
             # refresh self.pmale using slider value
             self.pmale = pmale_slider
 
-            bds_m = self.bounder_m.get_pns3_bds()
-            bds_f = self.bounder_f.get_pns3_bds()
+            p3_bds_m = self.bounder_m.get_pns3_bds()
+            p3_bds_f = self.bounder_f.get_pns3_bds()
 
             eu_bds_m = self.bounder_m.get_eu_bds()
             eu_bds_f = self.bounder_f.get_eu_bds()
 
-            Plotter.plot_all(bds_m=bds_m, bds_f=bds_f, eu_bds_m=eu_bds_m,
-                             eu_bds_f=eu_bds_f)
+            Plotter_2z.plot_all(p3_bds_m=p3_bds_m, p3_bds_f=p3_bds_f,
+                eu_bds_m=eu_bds_m, eu_bds_f=eu_bds_f)
 
-            exp_bds_sign.value = "Good choices for Observational " \
+            exp3_bds_sign.value = "Good choices for Observational " \
                 "Probabilities! :) They imply<br> the following bounds " \
                 "for the Experimental Probabilities:"
             left_bds, right_bds = self.bounder_m.get_exp_probs_bds()
-            exp_bds_sign.value +=\
+            exp3_bds_sign.value +=\
                 '<br>%.2f $\leq E_{1|0,m} \leq$ %.2f'\
                     % (left_bds[1, 0], right_bds[1, 0]) +\
                 '<br>%.2f $\leq E_{1|1,m}\leq$ %.2f' \
                     % (left_bds[1, 1], right_bds[1, 1])
             left_bds, right_bds = self.bounder_f.get_exp_probs_bds()
-            exp_bds_sign.value +=\
+            exp3_bds_sign.value +=\
                 '<br>%.2f $\leq E_{1|0,f} \leq$ %.2f'\
                     % (left_bds[1, 0], right_bds[1, 0]) +\
                 '<br>%.2f $\leq E_{1|1,f}\leq$ %.2f' \
