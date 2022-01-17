@@ -8,7 +8,7 @@ from Plotter_nz import Plotter_nz
 class Comparer:
     """
     This class takes as input the probabilities for o1b0=O_{1|0,z}, o1b1=O_{
-    1|1, z}, px1= P(x=1,z), e1b0=E_{1|0,z}, e1b1=E_{1|1,z}, pz=P(z) for each
+    1|1, z}, px1= P(x=1|z), e1b0=E_{1|0,z}, e1b1=E_{1|1,z}, pz=P(z) for each
     stratum z with name 'zname'. It can also take as input a utility
     function alp_y0_y1 = \alpha_{y_0, y_1} and various flags.
 
