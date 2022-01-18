@@ -159,6 +159,8 @@ class Plotter_nz:
                         rotation=0)
         if not horizontal:
             ax.axhline(y=0, color='black')
+        else:
+            ax.axvline(x=0, color='black')
 
     @staticmethod
     def plot_all_bds(zname_to_p3_bds, zname_to_eu_bds, horizontal=False):

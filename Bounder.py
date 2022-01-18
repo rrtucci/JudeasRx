@@ -84,11 +84,11 @@ class Bounder:
         O_{1|0}
     o1b1 : float
         O_{1|1}
-    only_obs :
-        True iff only Observational probabilities
     o_y_bar_x : np.array
         [shape=(2, 2)]
         O_{y|x}
+    only_obs :
+        True iff only Observational probabilities
     pns3_bds : np.array
         [shape =(3, 2)]
         [[PNS_low, PNS_high],
@@ -416,9 +416,9 @@ class Bounder:
 
         """
         low, high = self.get_exp_probs_bds()
-        if self.e_y_bar_x is None or \
-                (low > self.e_y_bar_x).all() or \
-                (self.e_y_bar_x > high).all():
+        if self.only_obs or \
+                not (low <= self.e_y_bar_x).all() or \
+                not (self.e_y_bar_x <= high).all():
             print("Experimental probability bounds are not satisfied")
             self.print_exp_probs_bds()
             assert False
