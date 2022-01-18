@@ -19,7 +19,7 @@ e1b0 = [.5, .5, .1]
 e1b1 = [.5, .5, .6]
 pz = [.2, .3, .5]
 
-col_name_to_col = {
+col_name_to_col_list = {
     'o1b0': o1b0,
     'o1b1': o1b1,
     'px1': px1,
@@ -28,7 +28,7 @@ col_name_to_col = {
     'pz': pz
 }
 
-df = pd.DataFrame(col_name_to_col,
+df = pd.DataFrame(col_name_to_col_list,
                   index=['a', 'b', 'c'])
 # print("aaaaaaaaaa\n", df)
 df.reset_index(inplace=True)

@@ -84,6 +84,8 @@ class Bounder:
         O_{1|0}
     o1b1 : float
         O_{1|1}
+    only_obs :
+        True iff only Observational probabilities
     o_y_bar_x : np.array
         [shape=(2, 2)]
         O_{y|x}
@@ -120,6 +122,13 @@ class Bounder:
             [shape=(2, )]
             E_{y|x}
         """
+        # Always init flags first in case calculations depend on them.
+        self.only_obs=False
+        if e_y_bar_x is None:
+            self.only_obs = True
+        self.exogeneity = False
+        self.monotonicity = False
+        self.strong_exo = False
 
         Bounder.check_prob_vec(px)
         self.px = px
@@ -147,10 +156,6 @@ class Bounder:
         self.left_bds_e_y_bar_x = np.zeros(shape=(2, 2))
         self.right_bds_e_y_bar_x = np.zeros(shape=(2, 2))
         self.pns3_bds = np.zeros(shape=(3, 2))
-
-        self.exogeneity = False
-        self.monotonicity = False
-        self.strong_exo = False
 
         self.alp_y0_y1 = np.zeros(shape=(2, 2))
         self.eu_bds = np.array([-1, 1])
@@ -212,6 +217,7 @@ class Bounder:
         self.e0b1 = e_y_bar_x[0, 1]
         self.e1b0 = e_y_bar_x[1, 0]
         self.e1b1 = e_y_bar_x[1, 1]
+        self.only_obs = False
 
     def set_utility_fun(self, alp_y0_y1):
         """
@@ -443,7 +449,7 @@ class Bounder:
 
         """
         any_exo = self.strong_exo or self.exogeneity
-        if self.e_y_bar_x is None:         # no experimental data
+        if self.only_obs:  # no experimental data
             pns_bds = [0, self.get_o_star_star()]
             pn_bds = [0, 1]
             ps_bds = [0, 1]
@@ -589,7 +595,7 @@ class Bounder:
         None
 
         """
-        if self.e_y_bar_x is None:
+        if self.only_obs:
             self.eu_bds = np.array([-1, 1])
             return
 
@@ -782,8 +788,8 @@ if __name__ == "__main__":
         o_y_bar_x_f = np.array([[.3, .73],
                                [.7, .27]])
         px_f = np.array([.3, .7])
-        alp_y0_y1_f = np.array([[2, 4],
-                                [-3, 7]])
+        alp_y0_y1_f = np.array([[.2, .4],
+                                [-.3, .7]])
         f = Bounder(o_y_bar_x_f, px_f, e_y_bar_x=e_y_bar_x_f)
         f.set_utility_fun(alp_y0_y1_f)
         f.print_all_probs(",f")
@@ -806,8 +812,8 @@ if __name__ == "__main__":
         o_y_bar_x_m = np.array([[.3, .3],
                                 [.7, .7]])
         px_m = np.array([.3, .7])
-        alp_y0_y1_m = np.array([[2, 4],
-                                [-3, 7]])
+        alp_y0_y1_m = np.array([[.2, .4],
+                                [-.3, .7]])
         m = Bounder(o_y_bar_x_m, px_m, e_y_bar_x=e_y_bar_x_m)
         m.set_utility_fun(alp_y0_y1_m)
         m.print_all_probs(",m")

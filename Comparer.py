@@ -19,7 +19,7 @@ class Comparer:
 
     This class has two constructors: __init__ takes its input probabilities
     from a dictionary named zname_to_input_probs, whereas create_from_file()
-    takes them from a file.
+    takes them from a csv file.
 
 
     Attributes
@@ -59,6 +59,7 @@ class Comparer:
         strong_exo : bool
         monotonicity : bool
         """
+        # always init flags first, in case calculations depend on them
         self.only_obs = only_obs
         self.exogeneity = exogeneity
         self.strong_exo = strong_exo
@@ -66,7 +67,6 @@ class Comparer:
 
         self.alp_y0_y1 = np.zeros(shape=(2, 2))
         if alp_y0_y1 is not None:
-            assert alp_y0_y1.shape == (2, 2)
             self.alp_y0_y1 = alp_y0_y1
 
         self.zname_to_pz = OrderedDict()
@@ -88,6 +88,7 @@ class Comparer:
             # print("ddddddddddd", zname, '\n', o_y_bar_x, "\n", px)
             self.zname_to_bounder[zname] = Bounder(o_y_bar_x, px)
             bder = self.zname_to_bounder[zname]
+            bder.only_obs = self.only_obs
             bder.exogeneity = self.exogeneity
             bder.strong_exo = self.strong_exo
             bder.monotonicity = self.monotonicity
@@ -143,18 +144,18 @@ class Comparer:
     def create_from_file(path, **kwargs):
         """
         This static method is a constructor. Whereas the constructor
-        __init__ gets its input probbilities from a dictionary,
-        this constructor gets them from a file located at 'path'.
+        __init__ gets its input probabilities from a dictionary,
+        this constructor gets them from a file located at 'path'. The file
+        is a csv file with very special structure which is checked. The file
+        must contain columns called "zname", "o1b0", "o1b1", "px1", "e1b0",
+        "e1b1", and "pz". The file may contain other columns, but they will
+        be disregarded. The "zname" column contains the names of the strata.
+        The other columns all contain probabilities.
 
         Parameters
         ----------
         path : str
-            path to file with input probabilities. The file is a csv file
-            with very special structure which is checked. The file must
-            contain columns called "zname", "o1b0", "o1b1", "px1", "e1b0",
-            "e1b1", and "pz". The file may contain other columns, but they
-            will be disregarded. The "zname" column contains the names of
-            the strata. The other columns all contain probabilities.
+            path to file with input probabilities.
         kwargs :
             same keyword arguments as the __init__ constructor
 
