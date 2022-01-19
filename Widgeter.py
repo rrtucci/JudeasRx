@@ -390,7 +390,19 @@ class Widgeter:
                 self.only_obs = False  # must call this before anything else
                 self.refresh_slider_colors(obs_green=False)
                 self.set_exp_sliders_to_valid_values()
+
+                # exogeneity and strong exogeneity don't apply if
+                # experimental data is available.
+                self.exogeneity = False
+                exo_but.value = False
+                exo_but.layout.visibility = 'hidden'
+
+                self.strong_exo = False
+                strong_exo_but.value = False
+                strong_exo_but.layout.visibility = 'hidden'
+
                 self.refresh_plot()
+
 
         add_but.on_click(add_but_do)
 
@@ -474,27 +486,6 @@ class Widgeter:
             self.refresh_plot()
         mono_but.observe(mono_but_do, names='value')
 
-        no_x_to_g_but = wid.Checkbox(
-            value=self.no_x_to_g,
-            description="$G$ is not a descendant of $X$",
-            indent=False)
-
-        def no_x_to_g_but_do(change):
-            new = change['new']
-            self.no_x_to_g = new
-            self.refresh_plot()
-        no_x_to_g_but.observe(no_x_to_g_but_do, names='value')
-        
-        bdoor_crit_but = wid.Checkbox(
-            value=self.bdoor_crit,
-            description="Backdoor criterion is satisfied",
-            indent=False)
-
-        def bdoor_crit_but_do(change):
-            new = change['new']
-            self.bdoor_crit = new
-            self.refresh_plot()
-        bdoor_crit_but.observe(bdoor_crit_but_do, names='value')
         ate_m_sign = wid.Label()
         ate_f_sign = wid.Label()
         ate_sign = wid.Label()
@@ -513,8 +504,9 @@ class Widgeter:
                 vbox_list.append(wid.VBox([x, tbox]))
             return wid.HBox(vbox_list), slider_to_tbox
         no_dags_box = wid.VBox([exo_but, strong_exo_but, mono_but])
-        dags_box = wid.VBox([no_x_to_g_but, bdoor_crit_but])
-        constraints_box = wid.HBox([no_dags_box, dags_box])
+        # dags_box = checkboxes for special dags
+        # constraints_box = wid.HBox([no_dags_box, dags_box])
+        constraints_box = no_dags_box
         ate_box = wid.VBox([ate_m_sign, ate_f_sign, ate_sign])
         cmd_box = wid.HBox([save_but, add_but])
         obs_box, self.obs_slider_to_tbox = box_the_sliders(self.obs_sliders)

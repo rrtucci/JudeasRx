@@ -29,7 +29,9 @@ class Bounder:
     A given O_{y|x} imposes bounds on E_{y|x} that must be obeyed for
     consistency. This class also calculates those bounds.
 
-    In this app, we consider a Bounder object bounder_m for males,
+    In this app, a Bounder object is created for each strata, where there
+    can be n>=2 strata (i.e., n values of z). For example, there can be two
+    strata, z=gender\in {male, female}, a Bounder object bounder_m for males,
     and a Bounder object bounder_f for females.
 
     In this app, we consider two cases:
@@ -38,11 +40,18 @@ class Bounder:
 
     2. Both Observational and Experimental data.
 
+    If you wish to consider the case of only experimental data,
+    no observational data, that is equivalent to considering the
+    experimental data to be observational and assuming it satisfies the
+    exogeneity (no confounder) assumption.
+
     We also allow the user to impose the additional constraints of
-    exogeneity, strong exogeneity, monotonicity and some specific DAG
-    families.
+    exogeneity (i.e., no confounder), strong exogeneity and monotonicity.
+    However, exogeneity and strong exogeneity are allowed only for case 1:
+    only observational data.
 
     The more constraints, the tighter the bounds on PNS3 and EU.
+
 
     Attributes
     ----------
@@ -235,8 +244,11 @@ class Bounder:
         None
 
         """
-        assert alp_y0_y1.shape == (2, 2)
-        assert (alp_y0_y1 >= -1).all() and (alp_y0_y1 <= 1).all()
+        assert alp_y0_y1.shape == (2, 2),\
+              str(alp_y0_y1) + " expected to be 2 X 2."
+        assert (alp_y0_y1 >= -1).all() and (alp_y0_y1 <= 1).all(),\
+            str(alp_y0_y1) + " must be normalized so all entries are " \
+                             "between -1 and 1."
         self.alp_y0_y1 = alp_y0_y1
 
     @staticmethod
@@ -254,11 +266,17 @@ class Bounder:
         None
 
         """
-        assert mat.shape == (2, 2)
-        assert (0 <= mat).all()
-        assert (mat <= 1).all()  # can't check 0<=mat<=1 at once
-        assert np.abs(sum(mat[:, 0]) - 1) < 1e-5
-        assert np.abs(sum(mat[:, 1]) - 1) < 1e-5
+        assert mat.shape == (2, 2),\
+            str(mat) + " expected to be 2 X 2."
+        # can't check 0<=mat<=1 at once
+        assert (0 <= mat).all(), \
+            str(mat) + " has entries that are <0."
+        assert (mat <= 1).all(), \
+            str(mat) + " has entries that are >1."
+        assert np.abs(sum(mat[:, 0]) - 1) < 1e-5, \
+            str(mat) + " has columns that don't sum to 1."
+        assert np.abs(sum(mat[:, 1]) - 1) < 1e-5, \
+            str(mat) + " has columns that don't sum to 1."
 
     @staticmethod
     def check_prob_vec(vec):
@@ -274,9 +292,12 @@ class Bounder:
         None
 
         """
-        assert (0 <= vec).all()
-        assert (vec <= 1).all()
-        assert np.abs(sum(vec) - 1) < 1e-5
+        assert (0 <= vec).all(),\
+            str(vec) + " has entries that are <0"
+        assert (vec <= 1).all(),\
+            str(vec) + " has entries that are >1"
+        assert np.abs(sum(vec) - 1) < 1e-5,\
+            str(vec) + " does not sum to 1"
 
     def get_ate(self):
         """
@@ -291,6 +312,17 @@ class Bounder:
             return self.e1b1 - self.e1b0
         else:
             return None
+
+    def get_bdoor_ate(self):
+        """
+        Returns backdoor ATE defined as bdoorATE= O_{1|1} - O_{1|0}
+
+        Returns
+        -------
+        float
+
+        """
+        return self.o1b1 - self.o1b0
 
     def get_py(self):
         """
@@ -419,9 +451,11 @@ class Bounder:
         if self.only_obs or \
                 not (low <= self.e_y_bar_x).all() or \
                 not (self.e_y_bar_x <= high).all():
-            print("Experimental probability bounds are not satisfied")
             self.print_exp_probs_bds()
-            assert False
+            assert False, \
+                "Experimental probability bounds are not satisfied"\
+                " or no experimental probs."
+
 
     def get_pns3_bds(self):
         """
@@ -438,6 +472,98 @@ class Bounder:
         """
         return self.pns3_bds
 
+    def set_pns3_bds_if_only_obs(self):
+        """
+        This method sets the class attribute for the bounds for PNS3 = (PNS,
+        PN, PS) iff self.only_obs==True. This method is used inside
+        set_pns3_bds(), which is more general.
+
+        Returns
+        -------
+        None
+
+        """
+        assert self.only_obs,\
+            "This method only handles case when self.only_obs is True."
+        any_exo = self.strong_exo or self.exogeneity
+        o_star_bar_star = self.get_o_star_bar_star()
+        o_star_star = self.get_o_star_star()
+        py0, py1 = self.get_py()
+        pns_left, pns_right = 0, 1
+        pn_left, pn_right = 0, 1
+        ps_left, ps_right = 0, 1
+        if not self.monotonicity:
+            if not any_exo:
+                pns_left, pns_right = 0, o_star_star
+                pn_left, pn_right = 0, 1
+                ps_left, ps_right = 0, 1
+            elif any_exo:
+                # pns bounds
+                pns_left = max(0.0, o_star_bar_star - 1)
+                pns_right = min(self.o1b1, self.o0b0)
+                # pn bounds
+                if self.o1b1 <= 0:
+                    pn_left, pn_right = 0, 1
+                else:
+                    err = (self.o1b1 - self.o1b0) / self.o1b1
+                    pn_left = max(0, err)
+                    pn_right = min(1, self.o0b0 / self.o1b1)
+                # ps bounds
+                if self.o0b0 <= 0:
+                    ps_left, ps_right = 0, 1
+                else:
+                    err_tilde = (self.o0b0 - self.o0b1) / self.o0b0
+                    ps_left = max(0, err_tilde)
+                    ps_right = min(1, self.o1b1 / self.o0b0)
+        elif self.monotonicity:
+            if not any_exo:
+                pns_left, pns_right = 0, 1
+                pn_left, pn_right = 0, 1
+                ps_left, ps_right = 0, 1
+            elif any_exo:
+                # pns bounds
+                pns_left = o_star_bar_star - 1
+                pns_right = pns_left
+                # pn bounds
+                if self.o11 <= 0:
+                    pn_left, pn_rigt = 0, 1
+                else:
+                    pn_left = (self.o0b0 - py0) / self.o11
+                    pn_right = pn_left
+                # ps bounds
+                if self.o00 <= 0:
+                    ps_left, ps_right = 0, 1
+                else:
+                    ps_left = (self.o1b1 - py1) / self.o00
+                ps_right = ps_left
+                if self.strong_exo:
+                    # when strong exo holds, pns = pn*o1b1 = ps*o0b0
+                    left = max(pns_left, pn_left * self.o1b1,
+                               ps_left * self.o0b0)
+                    right = min(pns_right, pn_right * self.o1b1,
+                                ps_right * self.o0b0)
+                    if left > right:
+                        print("strong exogeneity assumption is inconsistent")
+                        pns_left, pns_right = 0, 1
+                        pn_left, pn_right = 0, 1
+                        ps_left, ps_right = 0, 1
+                    else:
+                        pns_left, pns_right = left, right
+                        if self.o1b1 <= 0:
+                            pn_left, pn_right = 0, 1
+                        else:
+                            pn_left, pn_right =\
+                                left / self.o1b1, right / self.o1b1
+                        if self.o0b0 <= 0:
+                            ps_left, ps_right = 0, 1
+                        else:
+                            ps_left, ps_right = \
+                                left / self.o0b0, right / self.o0b0
+        pns_bds = [pns_left, pns_right]
+        pn_bds = [pn_left, pn_right]
+        ps_bds = [ps_left, ps_right]
+        self.pns3_bds = np.array([pns_bds, pn_bds, ps_bds])
+
     def set_pns3_bds(self):
         """
         This method sets the class attribute for the bounds for PNS3 = (PNS,
@@ -448,128 +574,73 @@ class Bounder:
         None
 
         """
+        if self.only_obs:
+            self.set_pns3_bds_if_only_obs()
+            return
+
         any_exo = self.strong_exo or self.exogeneity
-        if self.only_obs:  # no experimental data
-            pns_bds = [0, self.get_o_star_star()]
-            pn_bds = [0, 1]
-            ps_bds = [0, 1]
-        else:
-            py0, py1 = self.get_py()
-            e_star_bar_star = self.get_e_star_bar_star()
-            o_star_bar_star = self.get_o_star_bar_star()
-            o_star_star = self.get_o_star_star()
+        assert not self.exogeneity,\
+            "Exogeneity can only be assumed if there is"\
+            " only observational data, no experimental data."
 
-            if not any_exo and not self.monotonicity:
-                # pns bounds
-                pns_left = max(
-                    0,
-                    e_star_bar_star - 1,
-                    self.e0b0 - py0,
-                    self.e1b1 - py1)
-                pns_right = min(
-                    self.e1b1,
-                    self.e0b0,
-                    o_star_star,
-                    e_star_bar_star - o_star_star)
-
-                # pn bounds
-                if self.o11 <= 0:
-                    pn_left = 0
-                    pn_right = 1
-                else:
-                    pn_left = max(
-                        0,
-                        (self.e0b0 - py0)/self.o11)
-                    pn_right = min(
-                        1,
-                        (self.e0b0 - self.o00)/self.o11)
-
-                # ps bounds
-                if self.o00 <= 0:
-                    ps_left = 0
-                    ps_right = 1
-                else:
-                    ps_left = max(
-                        0,
-                        (self.e1b1 - py1)/self.o00)
-                    ps_right = min(
-                        1,
-                        (self.e1b1 - self.o11)/self.o00)
-
-            elif any_exo and not self.monotonicity:
-                # pns bounds
-                pns_left = max(
-                    0,
-                    o_star_bar_star - 1)
-                pns_right = min(
-                    self.o1b1,
-                    self.o0b0)
-                # pn bounds
-                if self.o1b1 <= 0:
-                    pn_left = 0
-                    pn_right = 1
-                else:
-                    err = (self.o1b1 - self.o1b0)/self.o1b1
-                    pn_left = max(0, err)
-                    pn_right = min(1, self.o0b0/self.o1b1)
-
-                # ps bounds
-                if self.o0b0 <= 0:
-                    ps_left = 0
-                    ps_right = 1
-                else:
-                    err_tilde = (self.o0b0 - self.o0b1)/self.o0b0
-                    ps_left = max(0, err_tilde)
-                    ps_right = min(1, self.o1b1/self.o0b0)
-            elif not any_exo and self.monotonicity:
-                # pns bounds
-                pns_left = e_star_bar_star - 1
-                pns_right = pns_left
-                # pn bounds
-                if self.o11 <= 0:
-                    pn_left = 1
-                else:
-                    pn_left = (self.e0b0 - py0)/self.o11
-                pn_right = pn_left
-                # ps bounds
-                if self.o00 <= 0:
-                    ps_left = 1
-                else:
-                    ps_left = (self.e1b1 - py1)/self.o00
-                ps_right = ps_left
-            elif any_exo and self.monotonicity:
-                # pns bounds
-                pns_left = o_star_bar_star - 1
-                pns_right = pns_left
-                # pn bounds
-                if self.o11 <= 0:
-                    pn_left = 1
-                else:
-                    pn_left = (self.o0b0 - py0)/self.o11
-                pn_right = pn_left
-                # ps bounds
-                if self.o00 <= 0:
-                    ps_left = 1
-                else:
-                    ps_left = (self.o1b1 - py1)/self.o00
-                ps_right = ps_left
+        py0, py1 = self.get_py()
+        e_star_bar_star = self.get_e_star_bar_star()
+        o_star_bar_star = self.get_o_star_bar_star()
+        o_star_star = self.get_o_star_star()
+        pns_left, pns_right = 0, 1
+        pn_left, pn_right = 0, 1
+        ps_left, ps_right = 0, 1
+        if not self.monotonicity:
+            # pns bounds
+            pns_left = max(
+                0.0,
+                e_star_bar_star - 1,
+                self.e0b0 - py0,
+                self.e1b1 - py1)
+            pns_right = min(
+                self.e1b1,
+                self.e0b0,
+                o_star_star,
+                e_star_bar_star - o_star_star)
+            # pn bounds
+            if self.o11 <= 0:
+                pn_left , pn_right = 0, 1
             else:
-                assert False
-            if self.strong_exo:
-                # when strong exo holds, pns = pn*o1b1 = ps*o0b0
-                left = max(pns_left, pn_left*self.o1b1, ps_left*self.o0b0)
-                right = min(pns_right, pn_right*self.o1b1, ps_right*self.o0b0)
-                pns_left = left
-                pns_right = right
-                if self.o1b1 > 0:
-                    pn_left = left/self.o1b1
-                    pn_right = right/self.o1b1
-                if self.o0b0 > 0:
-                    ps_left = left/self.o0b0
-                    ps_right = right/self.o0b0
-            pns_bds = [pns_left, pns_right]
-            pn_bds = [pn_left, pn_right]
-            ps_bds = [ps_left, ps_right]
+                pn_left = max(
+                    0,
+                    (self.e0b0 - py0)/self.o11)
+                pn_right = min(
+                    1,
+                    (self.e0b0 - self.o00)/self.o11)
+            # ps bounds
+            if self.o00 <= 0:
+                ps_left, ps_right= 0, 1
+            else:
+                ps_left = max(
+                    0,
+                    (self.e1b1 - py1)/self.o00)
+                ps_right = min(
+                    1,
+                    (self.e1b1 - self.o11)/self.o00)
+        elif self.monotonicity:
+            # pns bounds
+            pns_left = e_star_bar_star - 1
+            pns_right = pns_left
+            # pn bounds
+            if self.o11 <= 0:
+                pn_left, pn_right = 0, 1
+            else:
+                pn_left = (self.e0b0 - py0)/self.o11
+                pn_right = pn_left
+            # ps bounds
+            if self.o00 <= 0:
+                ps_left, ps_right = 0, 1
+            else:
+                ps_left = (self.e1b1 - py1)/self.o00
+                ps_right = ps_left
+        pns_bds = [pns_left, pns_right]
+        pn_bds = [pn_left, pn_right]
+        ps_bds = [ps_left, ps_right]
 
         self.pns3_bds = np.array([pns_bds, pn_bds, ps_bds])
 
@@ -795,9 +866,10 @@ if __name__ == "__main__":
         f.print_all_probs(",f")
         f.print_utility_fun("_f")
         print("---------------------------")
-        print("Check exp. data is within bds imposed by obs. data:")
         f.set_exp_probs_bds()
         f.print_exp_probs_bds(",f")
+        f.check_exp_prob_bds_satisfied()
+        print("Checked that exp. data is within bds imposed by obs. data:")
         print("---------------------------")
         f.set_pns3_bds()
         f.print_pns3_bds("_f")
@@ -819,9 +891,10 @@ if __name__ == "__main__":
         m.print_all_probs(",m")
         m.print_utility_fun("_m")
         print("---------------------------")
-        print("Check exp. data is within bds imposed by obs. data:")
         m.set_exp_probs_bds()
         m.print_exp_probs_bds(",m")
+        m.check_exp_prob_bds_satisfied()
+        print("Checked that exp. data is within bds imposed by obs. data:")
         print("---------------------------")
         m.set_pns3_bds()
         m.print_pns3_bds("_m")

@@ -1,8 +1,10 @@
 import numpy as np
 from collections import OrderedDict
+import pprint as pp
 import pandas as pd
 from Bounder import Bounder
 from Plotter_nz import Plotter_nz
+np.set_printoptions(precision=3, floatmode="fixed")
 
 
 class Comparer:
@@ -115,6 +117,8 @@ class Comparer:
         #     print(zname+':')
         #     bder.print_all_probs()
         #     bder.print_pns3_bds()
+        self.print_ATE()
+        self.print_bdoorATE()
 
     def plot_bds(self, horizontal=True):
         """
@@ -167,7 +171,10 @@ class Comparer:
         df = pd.read_csv(path)
         # print(df)
         cols = ['zname', 'o1b0', 'o1b1', 'px1', 'e1b0', 'e1b1', 'pz']
-        assert all(x in df.columns for x in cols)
+        assert all(x in df.columns for x in cols),\
+            "file must have a column named each of the following," \
+            "even if some columns won't be used:"\
+            "['zname', 'o1b0', 'o1b1', 'px1', 'e1b0', 'e1b1', 'pz']"
         df = df[cols]
         znames = list(df['zname'])
         # print(df)
@@ -178,6 +185,79 @@ class Comparer:
             zname_to_input_probs[zname] = row
         return Comparer(zname_to_input_probs, **kwargs)
 
+    def get_ATE(self):
+        """
+        Returns a tuple consisting of (1) a dictionary mapping zname to
+        ATE_z = E{1|1,z} - E_{1,0,z} and (2) the expected ATE
+        defined as ATE=\sum_z P(z) ATE_z
+
+        Returns
+        -------
+        OrderedDict[str, float], float
+
+        """
+        av = 0
+        zname_to_ATE = OrderedDict()
+        for zname, bder in self.zname_to_bounder.items():
+            pz = self.zname_to_pz[zname]
+            ate = bder.get_ate()
+            av += ate*pz
+            zname_to_ATE[zname] = ate
+        return zname_to_ATE, av
+
+    def get_bdoorATE(self):
+        """
+        Returns a tuple consisting of (1) a dictionary mapping zname to
+        bdoorATE_z = O{1|1,z} - O_{1,0,z} and (2) the expected bdoorATE
+        defined as bdoorATE=\sum_z P(z) bdoorATE_z
+
+        Returns
+        -------
+        OrderedDict[str, float], float
+
+        """
+        av = 0
+        zname_to_ATE = OrderedDict()
+        for zname, bder in self.zname_to_bounder.items():
+            pz = self.zname_to_pz[zname]
+            ate = bder.get_bdoor_ate()
+            av += ate * pz
+            zname_to_ATE[zname] = ate
+        return zname_to_ATE, av
+
+    def print_ATE(self):
+        """
+        prints output of get_ATE()
+
+        Returns
+        -------
+        None
+
+        """
+        if self.only_obs:
+            return
+        ate_dict, av = self.get_ATE()
+        print("------------------------------------")
+        print("Expected ATE=", av)
+        print("z name :  ATE_z, probability of z")
+        for zname, ate in ate_dict.items():
+            print(zname, ":", '%.3f, %.3f' % (ate, self.zname_to_pz[zname]))
+
+    def print_bdoorATE(self):
+        """
+        prints output of get_bdoorATE()
+
+        Returns
+        -------
+        None
+
+        """
+        ate_dict, av = self.get_bdoorATE()
+        print("------------------------------------")
+        print("Expected bdoorATE=", av)
+        print("z name :  bdoorATE_z, probability of z")
+        for zname, ate in ate_dict.items():
+            print(zname, ":", '%.3f, %.3f'%(ate, self.zname_to_pz[zname]))
 
 if __name__ == "__main__":
 
