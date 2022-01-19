@@ -191,6 +191,41 @@ class Plotter_nz:
         plt.tight_layout()
         plt.show()
 
+    @staticmethod
+    def plot_both_ATE(ATE, bdoorATE):
+        """
+        This method is called by class Comparer. It draws a scatter plot of
+        ( ATE_z, z) for all z and (bdoorATE_z, z) for all z. It also plots
+        vertical lies at the expected ATE and expected bdoorATE.
+
+        Parameters
+        ----------
+        ATE : (OrderedDict[str, float], float)
+        bdoorATE : (OrderedDict[str, float], float)
+
+        Returns
+        -------
+        None
+
+        """
+        ATE_e, exp_e = list(ATE[0].values()), ATE[1]
+        ATE_o, exp_o = list(bdoorATE[0].values()), bdoorATE[1]
+        znames = list(ATE[0].keys())
+
+        fig, ax = plt.subplots(1, 1)
+        ax.scatter(ATE_e, znames, color='hotpink')
+        ax.scatter(ATE_o, znames, color='blue')
+        ax.legend(["ATE", "Backdoor ATE"])
+        ax.axvline(x=exp_e, color='hotpink')
+        ax.axvline(x=exp_o, color='blue')
+
+        ax.set_xlim(-1, 1)
+        ax.grid(linestyle='--', axis='y')
+        ax.set_ylabel('z value')
+        ax.set_xlabel('difference of two probabilities')
+
+        plt.show()
+
 
 if __name__ == "__main__":
 
@@ -226,5 +261,18 @@ if __name__ == "__main__":
             zname_to_eu_bds[str(zindex+1)] = np.array(pair())
         Plotter_nz.plot_all_bds(zname_to_p3_bds, zname_to_eu_bds, horizontal)
 
+    def main3():
+        ATE_dict = OrderedDict()
+        bdoorATE_dict = OrderedDict()
+        ATE_dict['a'], bdoorATE_dict['a'] = .4, .3
+        ATE_dict['b'], bdoorATE_dict['b'] = .2, .1
+        ATE_dict['c'], bdoorATE_dict['c'] = -.1, 0
+        ATE = (ATE_dict, .3)
+        bdoorATE = (bdoorATE_dict, -.3)
+
+        Plotter_nz.plot_both_ATE(ATE, bdoorATE)
+
 
     main2(10, horizontal=True)
+    main3()
+

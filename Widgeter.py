@@ -422,8 +422,8 @@ class Widgeter:
                 self.bounder_m.print_utility_fun('_m')
                 self.bounder_f.print_utility_fun('_f')
                 print("ATE:-------------------------------")
-                ate_m = self.bounder_m.get_ate()
-                ate_f = self.bounder_f.get_ate()               
+                ate_m = self.bounder_m.get_ATE()
+                ate_f = self.bounder_f.get_ATE()
                 if ate_m is not None and ate_f is not None:
                     ate = ate_m * self.pmale + ate_f * (1 - self.pmale)
                     print("ATE_m=", "%.3f" % ate_m)
@@ -574,8 +574,8 @@ class Widgeter:
                     % (left_bds[1, 0], right_bds[1, 0]) +\
                 '<br>%.2f $\leq E_{1|1,f}\leq$ %.2f' \
                     % (left_bds[1, 1], right_bds[1, 1])
-            ate_f = self.bounder_f.get_ate()
-            ate_m = self.bounder_m.get_ate()
+            ate_f = self.bounder_f.get_ATE()
+            ate_m = self.bounder_m.get_ATE()
             if ate_m is not None and ate_f is not None:
                 ate = ate_m*self.pmale + ate_f*(1-self.pmale)
                 ate_m_sign.value = '$ATE_m=$ %.2f' % ate_m

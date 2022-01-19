@@ -299,7 +299,7 @@ class Bounder:
         assert np.abs(sum(vec) - 1) < 1e-5,\
             str(vec) + " does not sum to 1"
 
-    def get_ate(self):
+    def get_ATE(self):
         """
         Returns ATE = E_{1|1} - E_{1|0} or None
 
@@ -313,7 +313,7 @@ class Bounder:
         else:
             return None
 
-    def get_bdoor_ate(self):
+    def get_bdoorATE(self):
         """
         Returns backdoor ATE defined as bdoorATE= O_{1|1} - O_{1|0}
 
@@ -676,7 +676,7 @@ class Bounder:
         a11 = self.alp_y0_y1[1, 1]
 
         if self.monotonicity:
-            eu = a00*self.e0b1 + a11*self.e1b0 + a01*self.get_ate()
+            eu = a00*self.e0b1 + a11*self.e1b0 + a01*self.get_ATE()
             self.eu_bds = np.array([eu, eu])
             return
 

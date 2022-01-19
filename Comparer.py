@@ -117,8 +117,7 @@ class Comparer:
         #     print(zname+':')
         #     bder.print_all_probs()
         #     bder.print_pns3_bds()
-        self.print_ATE()
-        self.print_bdoorATE()
+        self.print_both_ATE()
 
     def plot_bds(self, horizontal=True):
         """
@@ -143,6 +142,18 @@ class Comparer:
         Plotter_nz.plot_all_bds(zname_to_p3_bds,
                                 zname_to_eu_bds,
                                 horizontal)
+
+    def plot_both_ATE(self):
+        """
+        Plots output of get_both_ATE().
+
+        Returns
+        -------
+        None
+
+        """
+        Plotter_nz.plot_both_ATE(self.get_ATE(),
+                                 self.get_bdoorATE())
 
     @staticmethod
     def create_from_file(path, **kwargs):
@@ -196,14 +207,14 @@ class Comparer:
         OrderedDict[str, float], float
 
         """
-        av = 0
+        exp = 0
         zname_to_ATE = OrderedDict()
         for zname, bder in self.zname_to_bounder.items():
             pz = self.zname_to_pz[zname]
-            ate = bder.get_ate()
-            av += ate*pz
+            ate = bder.get_ATE()
+            exp += ate*pz
             zname_to_ATE[zname] = ate
-        return zname_to_ATE, av
+        return zname_to_ATE, exp
 
     def get_bdoorATE(self):
         """
@@ -216,14 +227,14 @@ class Comparer:
         OrderedDict[str, float], float
 
         """
-        av = 0
+        exp = 0
         zname_to_ATE = OrderedDict()
         for zname, bder in self.zname_to_bounder.items():
             pz = self.zname_to_pz[zname]
-            ate = bder.get_bdoor_ate()
-            av += ate * pz
+            ate = bder.get_bdoorATE()
+            exp += ate * pz
             zname_to_ATE[zname] = ate
-        return zname_to_ATE, av
+        return zname_to_ATE, exp
 
     def print_ATE(self):
         """
@@ -236,12 +247,12 @@ class Comparer:
         """
         if self.only_obs:
             return
-        ate_dict, av = self.get_ATE()
+        ate_dict, exp = self.get_ATE()
         print("------------------------------------")
-        print("Expected ATE=", av)
-        print("z name :  ATE_z, probability of z")
+        print("Expected ATE=", exp)
+        print("z name:  probability of z, ATE_z")
         for zname, ate in ate_dict.items():
-            print(zname, ":", '%.3f, %.3f' % (ate, self.zname_to_pz[zname]))
+            print(zname, ":", '%.3f, %.3f' % (self.zname_to_pz[zname], ate))
 
     def print_bdoorATE(self):
         """
@@ -252,12 +263,33 @@ class Comparer:
         None
 
         """
-        ate_dict, av = self.get_bdoorATE()
+        ate_dict, exp = self.get_bdoorATE()
         print("------------------------------------")
-        print("Expected bdoorATE=", av)
-        print("z name :  bdoorATE_z, probability of z")
+        print("Expected bdoorATE=", exp)
+        print("z name:  probability of z, bdoorATE_z")
         for zname, ate in ate_dict.items():
-            print(zname, ":", '%.3f, %.3f'%(ate, self.zname_to_pz[zname]))
+            print(zname + ":", '%.3f, %.3f'%(self.zname_to_pz[zname], ate))
+
+
+    def print_both_ATE(self):
+        """
+        Prints output of get_ATE() and get_bdoorATE() side by side for easy
+        comparison.
+
+        Returns
+        -------
+        None
+
+        """
+        ate_dict_o, exp_o = self.get_bdoorATE()
+        ate_dict_e, exp_e = self.get_ATE()
+        print("------------------------------------")
+        print("Expected ATE, Expected bdoorATE:", exp_e, exp_o )
+        print("z name:  probability of z, ATE_z, bdoorATE_z")
+        for zname, exp_e in ate_dict_e.items():
+            exp_o = ate_dict_o[zname]
+            print(zname + ":", '%.3f, %.3f, %.3f'
+                  %(self.zname_to_pz[zname], exp_e, exp_o))
 
 if __name__ == "__main__":
 
@@ -277,6 +309,7 @@ if __name__ == "__main__":
                        alp_y0_y1=alp_y0_y1,
                        only_obs=False)
         cer.plot_bds()
+        cer.plot_both_ATE()
     main()
 
 
