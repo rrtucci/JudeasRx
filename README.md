@@ -37,6 +37,18 @@ by the doctor; no insubordination is tolerated. From the RCT, one collects
 Experimental Data (ED). The ED imposes tighter bounds on PNS, PN, PS and 
 EU than the bounds imposed by the OD alone.
 
+## Extension to more than two strata
+The above GUI handles just two strata, male and female, but JudeasRx can 
+handle any 
+number n >= 2 of
+strata (strata=Z values, where Z is a confounder.) JudeasRx doesn't have a 
+GUI for more than two strata. Instead of using sliders for input, 
+it uses either Python dictionaries or csv files as input. You can read the doc 
+strings 
+attached to the Python code to learn how to use that part of JudeasRx. An 
+example is provided.
+
+
 ## Mathematical Theory and Notation 
 The mathematical theory and notation are described in gory  but 
 entertaining detail in the chapters entitled  “Personalized Treatment 
