@@ -92,9 +92,9 @@ class Widgeter:
             self,
             o1b0_m, o1b1_m, px1_m,
             o1b0_f, o1b1_f, px1_f,
+            pmale,
             e1b0_m, e1b1_m,
             e1b0_f, e1b1_f,
-            pmale,
             alp00, alp01, alp10, alp11
             ):
         """
@@ -116,6 +116,8 @@ class Widgeter:
             O_{1|1,f}
         px1_f : float
             P(x=1) for females
+        pmale : float
+            P(g=male)
         e1b0_m : float
             E_{1|0,m}
         e1b1_m : float
@@ -124,8 +126,6 @@ class Widgeter:
             E_{1|0,f}
         e1b1_f : float
             E_{1|1,f}
-        pmale : float
-            P(g=male)
         alp00 : float
             \alpha_{0,0}, utility function component
         alp01 : float
@@ -217,9 +217,9 @@ class Widgeter:
 
     def refresh_plot(self):
         """
-        This method is a clever way of inducing the method wid.interactive()
-        to redraw the plot. The method jiggles the pmale slider,
-        thus causing wid.interactive() to redraw the plot.
+        This method is a clever way of inducing the method wid.interactive() 
+        to redraw the plot. The method jiggles any slider, thus causing 
+        wid.interactive() to redraw the plot. 
 
         Returns
         -------
@@ -227,7 +227,7 @@ class Widgeter:
 
         """
         # just jiggle the pmale slider
-        x = self.exp_sliders[4]
+        x = self.exp_sliders[0]
         old_disabled = x.disabled
         x.disabled = False
         delta = .1
@@ -276,7 +276,7 @@ class Widgeter:
         This is the main method of this class and the only one meant for
         external use. It draws a GUI.
 
-        The GUI has 6 sliders for Observational Probabilities, 5 sliders for
+        The GUI has 7 sliders for Observational Probabilities, 4 sliders for
         Experimental Probabilities, and 4 sliders for utility function
         components (alphas). Each slider has a text box attached to it which
         can be used to enter input by typing numbers instead of moving the
@@ -311,8 +311,10 @@ class Widgeter:
         obs_f_sliders = [o1b0_f_slider,
                         o1b1_f_slider,
                         px1_f_slider]
+        pmale_slider = wid.widgets.FloatSlider(**slider_params)
         self.obs_sliders = [*obs_m_sliders,
-                            *obs_f_sliders]
+                            *obs_f_sliders,
+                            pmale_slider]
 
         e1b0_m_slider = wid.widgets.FloatSlider(**slider_params)
         e1b1_m_slider = wid.widgets.FloatSlider(**slider_params)
@@ -325,10 +327,9 @@ class Widgeter:
         # order important, 1b0 before 1b1,
         # mnemonic 10 < 11
         exp_f_sliders = [e1b0_f_slider, e1b1_f_slider]
-        pmale_slider = wid.widgets.FloatSlider(**slider_params)
+
         self.exp_sliders = [*exp_m_sliders,
-                            *exp_f_sliders,
-                            pmale_slider]
+                            *exp_f_sliders]
         
         alp_slider_params = dict(
             min=-1,
@@ -350,14 +351,15 @@ class Widgeter:
             #
             obs_f_sliders[0]: 'O_{1|0,f}',
             obs_f_sliders[1]: 'O_{1|1,f}',
-            obs_f_sliders[2]: '\pi_{1,f}'}
+            obs_f_sliders[2]: '\pi_{1,f}',
+            pmale_slider: 'P_m'
+        }
 
         self.exp_slider_to_latex = {
             exp_m_sliders[0]: 'E_{1|0,m}',
             exp_m_sliders[1]: 'E_{1|1,m}',
             exp_f_sliders[0]: 'E_{1|0,f}',
-            exp_f_sliders[1]: 'E_{1|1,f}',
-            pmale_slider: 'P_m'
+            exp_f_sliders[1]: 'E_{1|1,f}'
         }
         self.alp_slider_to_latex = {
             alp00_slider: r'\alpha_{0,0}',
@@ -367,15 +369,14 @@ class Widgeter:
         }
 
         header = wid.HTMLMath("Enter Observational Data from a survey." +
-            "<br>Then press the 'Add Experimental Data (RCT)' button\
-            if you also have Experimental Data."
-            "<br>Sliders with green/red labels are\
-            enabled/disabled."
+            "<br>Then press the 'Add Experimental Data (RCT)' button if you "
+            "also have Experimental Data."
+            "<br>Sliders with green/red labels are enabled/disabled."
             "<br>$g\in\{m,f\}$ stands for gender.$x,y\in \{0,1\}$."
-            "<br>$E_{y|x} = \sum_g E_{y|x,g}P_g$ (backdoor adjustment "
-            "formula)"
             "<br>$ATE_g = E_{1|1,g} - E_{1|0,g}$"
-            "<br>$ATE=E_{1|1} - E_{1|0}$"
+            "<br>$ATE=\sum_g ATE_g P_g$"
+            "<br>$bATE_g = O_{1|1,g} - O_{1|0,g}$"
+            "<br>$bATE=\sum_g bATE_g P_g$ (backdoor adjustment formula)"
             "<br>$PNS = \sum_g PNS_g P_g$")
 
         add_but = wid.Button(
@@ -403,7 +404,6 @@ class Widgeter:
 
                 self.refresh_plot()
 
-
         add_but.on_click(add_but_do)
 
         save_but = wid.Button(
@@ -422,13 +422,13 @@ class Widgeter:
                 self.bounder_m.print_utility_fun('_m')
                 self.bounder_f.print_utility_fun('_f')
                 print("ATE:-------------------------------")
-                ate_m = self.bounder_m.get_ATE()
-                ate_f = self.bounder_f.get_ATE()
-                if ate_m is not None and ate_f is not None:
-                    ate = ate_m * self.pmale + ate_f * (1 - self.pmale)
-                    print("ATE_m=", "%.3f" % ate_m)
-                    print("ATE_f", "%.3f" % ate_f)
-                    print("ATE=", "%.3f" % ate)
+                ATE_m = self.bounder_m.get_ATE()
+                ATE_f = self.bounder_f.get_ATE()
+                if ATE_m is not None and ATE_f is not None:
+                    ATE = ATE_m * self.pmale + ATE_f * (1 - self.pmale)
+                    print("ATE_m=", "%.3f" % ATE_m)
+                    print("ATE_f", "%.3f" % ATE_f)
+                    print("ATE=", "%.3f" % ATE)
                 print("PNS3:------------------------------")
                 self.bounder_m.print_pns3_bds('_m')
                 self.bounder_f.print_pns3_bds('_f')
@@ -486,9 +486,9 @@ class Widgeter:
             self.refresh_plot()
         mono_but.observe(mono_but_do, names='value')
 
-        ate_m_sign = wid.Label()
-        ate_f_sign = wid.Label()
-        ate_sign = wid.Label()
+        ATE_m_sign = wid.Label()
+        ATE_f_sign = wid.Label()
+        ATE_sign = wid.Label()
 
         def box_the_sliders(sliders):
             vbox_list = []
@@ -507,7 +507,7 @@ class Widgeter:
         # dags_box = checkboxes for special dags
         # constraints_box = wid.HBox([no_dags_box, dags_box])
         constraints_box = no_dags_box
-        ate_box = wid.VBox([ate_m_sign, ate_f_sign, ate_sign])
+        ATE_box = wid.VBox([ATE_m_sign, ATE_f_sign, ATE_sign])
         cmd_box = wid.HBox([save_but, add_but])
         obs_box, self.obs_slider_to_tbox = box_the_sliders(self.obs_sliders)
         # margin and padding are given as a single string with the values in
@@ -520,7 +520,7 @@ class Widgeter:
         exp_box, self.exp_slider_to_tbox = box_the_sliders(self.exp_sliders)
         exp_box = wid.HBox([exp_box],
             layout=wid.Layout(border='solid'))
-        exp_margin = wid.VBox([constraints_box, ate_box])
+        exp_margin = wid.VBox([constraints_box, ATE_box])
         alp_box, self.alp_slider_to_tbox = box_the_sliders(self.alp_sliders)
         alp_box = wid.HBox([alp_box],
             layout=wid.Layout(border='solid'))
@@ -534,17 +534,17 @@ class Widgeter:
 
         def fun(o1b0_m_slider, o1b1_m_slider, px1_m_slider,
                 o1b0_f_slider, o1b1_f_slider, px1_f_slider,
+                pmale_slider,
                 e1b0_m_slider, e1b1_m_slider,
                 e1b0_f_slider, e1b1_f_slider,
-                pmale_slider,
                 alp00_slider, alp01_slider, alp10_slider, alp11_slider
                 ):
             self.refresh_bounders_using_slider_vals(
                 o1b0_m_slider, o1b1_m_slider, px1_m_slider,
                 o1b0_f_slider, o1b1_f_slider, px1_f_slider,
+                pmale_slider,
                 e1b0_m_slider, e1b1_m_slider,
                 e1b0_f_slider, e1b1_f_slider,
-                pmale_slider,
                 alp00_slider, alp01_slider, alp10_slider, alp11_slider
             )
             # refresh self.pmale using slider value
@@ -556,13 +556,16 @@ class Widgeter:
             eu_bds_m = self.bounder_m.get_eu_bds()
             eu_bds_f = self.bounder_f.get_eu_bds()
 
-            Plotter_2z.plot_all(p3_bds_m=p3_bds_m, p3_bds_f=p3_bds_f,
-                eu_bds_m=eu_bds_m, eu_bds_f=eu_bds_f)
+            Plotter_2z.plot_all_bds(p3_bds_m=p3_bds_m, p3_bds_f=p3_bds_f,
+                                    eu_bds_m=eu_bds_m, eu_bds_f=eu_bds_f)
 
             exp3_bds_sign.value = "Good choices for Observational " \
-                "Probabilities! :) They imply<br> the following bounds " \
-                "for the Experimental Probabilities:"
+                "Probabilities! :) <br>They imply the following bounds " \
+                "<br>for the Experimental Probabilities:"
             left_bds, right_bds = self.bounder_m.get_exp_probs_bds()
+            bdoorATE_m = self.bounder_m.get_bdoorATE()
+            bdoorATE_f = self.bounder_f.get_bdoorATE()
+            bdoorATE = bdoorATE_m*self.pmale + bdoorATE_f*(1-self.pmale)
             exp3_bds_sign.value +=\
                 '<br>%.2f $\leq E_{1|0,m} \leq$ %.2f'\
                     % (left_bds[1, 0], right_bds[1, 0]) +\
@@ -574,13 +577,19 @@ class Widgeter:
                     % (left_bds[1, 0], right_bds[1, 0]) +\
                 '<br>%.2f $\leq E_{1|1,f}\leq$ %.2f' \
                     % (left_bds[1, 1], right_bds[1, 1])
-            ate_f = self.bounder_f.get_ATE()
-            ate_m = self.bounder_m.get_ATE()
-            if ate_m is not None and ate_f is not None:
-                ate = ate_m*self.pmale + ate_f*(1-self.pmale)
-                ate_m_sign.value = '$ATE_m=$ %.2f' % ate_m
-                ate_f_sign.value = '$ATE_f=$ %.2f' % ate_f
-                ate_sign.value = '$ATE=$ %.2f' % ate
+            exp3_bds_sign.value += \
+                "<br><br>They also imply the following backdoor ATEs" +\
+                '<br>$bATE_m=$ %.2f' % (bdoorATE_m) +\
+                '<br>$bATE_f=$ %.2f' % (bdoorATE_f) +\
+                '<br>$bATE=$ %.2f' % (bdoorATE)
+
+            ATE_m = self.bounder_m.get_ATE()
+            ATE_f = self.bounder_f.get_ATE()
+            if ATE_m is not None and ATE_f is not None:
+                ATE = ATE_m*self.pmale + ATE_f*(1-self.pmale)
+                ATE_m_sign.value = '$ATE_m=$ %.2f' % ATE_m
+                ATE_f_sign.value = '$ATE_f=$ %.2f' % ATE_f
+                ATE_sign.value = '$ATE=$ %.2f' % ATE
 
         slider_dict = {
             'o1b0_m_slider': o1b0_m_slider,
@@ -589,11 +598,11 @@ class Widgeter:
             'o1b0_f_slider': o1b0_f_slider,
             'o1b1_f_slider': o1b1_f_slider,
             'px1_f_slider': px1_f_slider,
+            'pmale_slider': pmale_slider,
             'e1b0_m_slider': e1b0_m_slider,
             'e1b1_m_slider': e1b1_m_slider,
             'e1b0_f_slider': e1b0_f_slider,
             'e1b1_f_slider': e1b1_f_slider,
-            'pmale_slider': pmale_slider,
             'alp00_slider': alp00_slider,
             'alp01_slider': alp01_slider,
             'alp10_slider': alp10_slider,

@@ -192,32 +192,36 @@ class Plotter_nz:
         plt.show()
 
     @staticmethod
-    def plot_both_ATE(ATE, bdoorATE):
+    def plot_both_ATE(bdoorATE, ATE=None):
         """
         This method is called by class Comparer. It draws a scatter plot of
-        ( ATE_z, z) for all z and (bdoorATE_z, z) for all z. It also plots
-        vertical lies at the expected ATE and expected bdoorATE.
+        (bdoorATE_z, z) for all z and (ATE_z, z) for all z. It also plots
+        vertical lies at the expected bdoorATE and expected ATE.
 
         Parameters
         ----------
-        ATE : (OrderedDict[str, float], float)
         bdoorATE : (OrderedDict[str, float], float)
+        ATE : (OrderedDict[str, float], float), None
 
         Returns
         -------
         None
 
         """
-        ATE_e, exp_e = list(ATE[0].values()), ATE[1]
         ATE_o, exp_o = list(bdoorATE[0].values()), bdoorATE[1]
         znames = list(ATE[0].keys())
 
         fig, ax = plt.subplots(1, 1)
-        ax.scatter(ATE_e, znames, color='hotpink')
         ax.scatter(ATE_o, znames, color='blue')
-        ax.legend(["ATE", "Backdoor ATE"])
-        ax.axvline(x=exp_e, color='hotpink')
         ax.axvline(x=exp_o, color='blue')
+
+        if ATE is not None:
+            ATE_e, exp_e = list(ATE[0].values()), ATE[1]
+            ax.scatter(ATE_e, znames, color='hotpink')
+            ax.axvline(x=exp_e, color='hotpink')
+            ax.legend(["ATE", "Backdoor ATE"])
+        else:
+            ax.legend(["Backdoor ATE"])
 
         ax.set_xlim(-1, 1)
         ax.grid(linestyle='--', axis='y')

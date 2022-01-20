@@ -116,7 +116,7 @@ class Plotter_2z:
         ax.axhline(y=0, color='black')
 
     @staticmethod
-    def plot_all(p3_bds_m, p3_bds_f, eu_bds_m, eu_bds_f):
+    def plot_all_bds(p3_bds_m, p3_bds_f, eu_bds_m, eu_bds_f):
         """
         This method calls both plot_pns3_bds() and plot_eu_bds().
 
@@ -190,6 +190,6 @@ if __name__ == "__main__":
         eu_bds_m = np.array([-.4, .8])
         eu_bds_f = np.array([0, .5])
 
-        Plotter_2z.plot_all(p3_bds_m, p3_bds_f, eu_bds_m, eu_bds_f)
+        Plotter_2z.plot_all_bds(p3_bds_m, p3_bds_f, eu_bds_m, eu_bds_f)
 
     main()

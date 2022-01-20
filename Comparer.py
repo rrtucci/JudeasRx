@@ -152,8 +152,12 @@ class Comparer:
         None
 
         """
-        Plotter_nz.plot_both_ATE(self.get_ATE(),
-                                 self.get_bdoorATE())
+        bdoorATE = self.get_bdoorATE()
+        if self.only_obs:
+            ATE = None
+        else:
+            ATE = self.get_ATE()
+        Plotter_nz.plot_both_ATE(bdoorATE, ATE=ATE)
 
     @staticmethod
     def create_from_file(path, **kwargs):
@@ -219,8 +223,8 @@ class Comparer:
     def get_bdoorATE(self):
         """
         Returns a tuple consisting of (1) a dictionary mapping zname to
-        bdoorATE_z = O{1|1,z} - O_{1,0,z} and (2) the expected bdoorATE
-        defined as bdoorATE=\sum_z P(z) bdoorATE_z
+        backdoor ATE defined as bdoorATE_z = O{1|1,z} - O_{1,0,z} and (2)
+        the expected bdoorATE defined as bdoorATE=\sum_z P(z) bdoorATE_z
 
         Returns
         -------
@@ -281,6 +285,10 @@ class Comparer:
         None
 
         """
+        if self.only_obs:
+            self.print_bdoorATE()
+            return
+
         ate_dict_o, exp_o = self.get_bdoorATE()
         ate_dict_e, exp_e = self.get_ATE()
         print("------------------------------------")
