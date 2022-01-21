@@ -23,7 +23,7 @@ coded using ipywidgets. The bar graphs change as the sliders move.
 ## UseCase 
 The app considers the simple yet illustrative case of trying to prescribe a 
 medicine differently for male versus female patients.  The Rx is based on 
-probabilities called PNS, PN and PS and an expected utility fuction called EU 
+probabilities called PNS, PN and PS and an expected utility function called EU 
 that were invented by Pearl and coworkers.
 
 To do a Rx, one first allows the patients to take or not take the drug, 
