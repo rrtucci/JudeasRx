@@ -1,0 +1,19 @@
+strict digraph  {
+H;
+B;
+D;
+G;
+F;
+E;
+A;
+C;
+B -> D;
+D -> F;
+G -> H;
+E -> H;
+E -> F;
+A -> B;
+A -> C;
+C -> E;
+C -> G;
+}
