@@ -2,12 +2,14 @@ import numpy as np
 np.set_printoptions(precision=3, floatmode="fixed")
 
 
-class Bounder:
+class Bounder_ana:
     """
-    The theory and notation in this class is explained in the 2 chapters
-    entitled "Personalized Treatment Effects" and "Personalized Expected
-    Utility" of my free open source book Bayesuvius. Those 2 chapters
-    are totally based on work by Pearl, Tian and later Pearl, Li, Mueller.
+    Bounder_ana= Bounder analytic, to distinguish it from Bounder_MC= Bounder
+    Monte Carlo. The theory and notation in this class is explained in the 2
+    chapters entitled "Personalized Treatment Effects" and "Personalized
+    Expected Utility" of my free open source book Bayesuvius. Those 2
+    chapters are totally based on work by Pearl, Tian and later Pearl, Li,
+    Mueller.
 
     https://qbnets.wordpress.com/2020/11/30/my-free-book-bayesuvius-on-bayesian-networks/
 
@@ -29,10 +31,10 @@ class Bounder:
     A given O_{y|x} imposes bounds on E_{y|x} that must be obeyed for
     consistency. This class also calculates those bounds.
 
-    In this app, a Bounder object is created for each strata, where there
+    In this app, a Bounder_ana object is created for each strata, where there
     can be n>=2 strata (i.e., n values of z). For example, there can be two
-    strata, z=gender\in {male, female}, a Bounder object bounder_m for males,
-    and a Bounder object bounder_f for females.
+    strata, z=gender\in {male, female}, a Bounder_ana object bounder_m for
+    males, and a Bounder_ana object bounder_f for females.
 
     In this app, we consider two cases:
 
@@ -139,12 +141,12 @@ class Bounder:
         self.monotonicity = False
         self.strong_exo = False
 
-        Bounder.check_prob_vec(px)
+        Bounder_ana.check_prob_vec(px)
         self.px = px
         self.px0 = px[0]
         self.px1 = px[1]
 
-        Bounder.check_2d_trans_matrix(o_y_bar_x)
+        Bounder_ana.check_2d_trans_matrix(o_y_bar_x)
         self.o_y_bar_x = o_y_bar_x
         self.o0b0 = o_y_bar_x[0, 0]
         self.o0b1 = o_y_bar_x[0, 1] 
@@ -188,12 +190,12 @@ class Bounder:
         None
 
         """
-        Bounder.check_prob_vec(px)
+        Bounder_ana.check_prob_vec(px)
         self.px = px
         self.px0 = px[0]
         self.px1 = px[1]
 
-        Bounder.check_2d_trans_matrix(o_y_bar_x)
+        Bounder_ana.check_2d_trans_matrix(o_y_bar_x)
         self.o_y_bar_x = o_y_bar_x
         self.o0b0 = o_y_bar_x[0, 0]
         self.o0b1 = o_y_bar_x[0, 1]
@@ -220,7 +222,7 @@ class Bounder:
         None
 
         """
-        Bounder.check_2d_trans_matrix(e_y_bar_x)
+        Bounder_ana.check_2d_trans_matrix(e_y_bar_x)
         self.e_y_bar_x = e_y_bar_x
         self.e0b0 = e_y_bar_x[0, 0]
         self.e0b1 = e_y_bar_x[0, 1]
@@ -861,7 +863,7 @@ if __name__ == "__main__":
         px_f = np.array([.3, .7])
         alp_y0_y1_f = np.array([[.2, .4],
                                 [-.3, .7]])
-        f = Bounder(o_y_bar_x_f, px_f, e_y_bar_x=e_y_bar_x_f)
+        f = Bounder_ana(o_y_bar_x_f, px_f, e_y_bar_x=e_y_bar_x_f)
         f.set_utility_fun(alp_y0_y1_f)
         f.print_all_probs(",f")
         f.print_utility_fun("_f")
@@ -886,7 +888,7 @@ if __name__ == "__main__":
         px_m = np.array([.3, .7])
         alp_y0_y1_m = np.array([[.2, .4],
                                 [-.3, .7]])
-        m = Bounder(o_y_bar_x_m, px_m, e_y_bar_x=e_y_bar_x_m)
+        m = Bounder_ana(o_y_bar_x_m, px_m, e_y_bar_x=e_y_bar_x_m)
         m.set_utility_fun(alp_y0_y1_m)
         m.print_all_probs(",m")
         m.print_utility_fun("_m")

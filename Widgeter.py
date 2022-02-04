@@ -1,4 +1,4 @@
-from Bounder import Bounder
+from Bounder_ana import Bounder_ana
 from Plotter_2z import Plotter_2z
 import numpy as np
 import ipywidgets as wid
@@ -25,10 +25,10 @@ class Widgeter:
     bdoor_crit : bool
         True iff backdoor criterion for node G relative to (X,Y) is
         satisfied
-    bounder_f : Bounder
-        Bounder object for females
-    bounder_m : Bounder
-        Bounder object for males
+    bounder_f : Bounder_ana
+        Bounder_ana object for females
+    bounder_m : Bounder_ana
+        Bounder_ana object for males
     exogeneity : bool
     exp_slider_to_latex : dict[wid.FloatSlider, str]
         dictionary mapping experimental sliders to a LaTex strings
@@ -66,12 +66,12 @@ class Widgeter:
 
         o_y_bar_x_m = np.array([[.5, .5], [.5, .5]])
         px_m = np.array([.5, .5])
-        self.bounder_m = Bounder(o_y_bar_x_m, px_m)
+        self.bounder_m = Bounder_ana(o_y_bar_x_m, px_m)
         self.bounder_m.set_exp_probs_bds()
 
         o_y_bar_x_f = np.array([[.5, .5], [.5, .5]])
         px_f = np.array([.5, .5])
-        self.bounder_f = Bounder(o_y_bar_x_f, px_f)
+        self.bounder_f = Bounder_ana(o_y_bar_x_f, px_f)
         self.bounder_f.set_exp_probs_bds()
 
         self.pmale = .5

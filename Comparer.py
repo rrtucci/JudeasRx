@@ -2,7 +2,7 @@ import numpy as np
 from collections import OrderedDict
 import pprint as pp
 import pandas as pd
-from Bounder import Bounder
+from Bounder_ana import Bounder_ana
 from Plotter_nz import Plotter_nz
 np.set_printoptions(precision=3, floatmode="fixed")
 
@@ -14,7 +14,7 @@ class Comparer:
     stratum z with name 'zname'. It can also take as input a utility
     function alp_y0_y1 = \alpha_{y_0, y_1} and various flags.
 
-    For each stratum, this class constructs a Bounder object and asks it to
+    For each stratum, this class constructs a Bounder_ana object and asks it to
     calculate PNS3 and EU bounds. It stores all the bounders it constructs.
     Its method plot_bds() calls class Plotter_nz to plot the bounds stored in
     each bounder.
@@ -35,7 +35,7 @@ class Comparer:
         True iff only observational probabilities, no experimental ones are
         available.
     strong_exo : bool
-    zname_to_bounder : OrderedDict[str, Bounder]
+    zname_to_bounder : OrderedDict[str, Bounder_ana]
     zname_to_pz : OrderedDict[str, float]
     """
 
@@ -88,7 +88,7 @@ class Comparer:
                 [o1b0, o1b1]])
             px = np.array([1 - px1, px1])
             # print("ddddddddddd", zname, '\n', o_y_bar_x, "\n", px)
-            self.zname_to_bounder[zname] = Bounder(o_y_bar_x, px)
+            self.zname_to_bounder[zname] = Bounder_ana(o_y_bar_x, px)
             bder = self.zname_to_bounder[zname]
             bder.only_obs = self.only_obs
             bder.exogeneity = self.exogeneity
@@ -112,7 +112,7 @@ class Comparer:
             if alp_y0_y1 is not None:
                 bder.set_utility_fun(alp_y0_y1)
                 bder.set_eu_bds()
-        Bounder.check_prob_vec(np.array(list(self.zname_to_pz.values())))
+        Bounder_ana.check_prob_vec(np.array(list(self.zname_to_pz.values())))
         # for zname, bder in self.zname_to_bounder.items():
         #     print(zname+':')
         #     bder.print_all_probs()
