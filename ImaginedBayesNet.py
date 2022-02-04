@@ -8,19 +8,26 @@ class ImaginedBayesNet(BayesNet):
     https://github.com/artiste-qb-net/quantum-fog
 
     This class takes as input a BayesNet object called 'in_bnet' with nodes
-    X, Y and an arrow X->Y. The class modifies in_bnet by
+    X, Y and an arrow X->Y. Let Pa(Y) -X be parents of Y other than X. We
+    assume that in in_bnet,  Pa(Y)-X is a single node Z, or empty. If Pa(
+    Y)-X is larger than one node, please combine them into a single node Z
+    and add arrow Z->Y.
 
-    1. removing all arrows entering Y except X. Call Pa(Y)-X= parents of X
-    minus X
+    As usual, we will assume 2 cases: only observational data (
+    self.only_obs=True) and both observational and experimental data (
+    self.only_obs=False. In case of only experimental data, use an in_bnet
+    with no X parents, and assume only_obs=True.
 
-    2. adding two new nodes Y0 and Y1 and arrows [Pa(X)-X]->Y0->Y,
-    [Pa(X)-X]->Y1->Y
+    This class modifies in_bnet as follows:
 
-    3. if experimental and observational data (self.only_obs=False), adding
-    constraint nodes XY0, XY1 and arrows X->XY0<-Y0, X->XY1<-Y1
+    1. it adds two new nodes Y0 and Y1
 
-    4. if only observational data (self.only_obs=False), adding constraint
-    node XY and arrows X->XY<-Y
+    1. if Z exists, it removes the arrow Z->Y, and adds arrows Z->Y0->Y,
+    Z->Y1->Y. If Z doesn't exist, it adds arrows Y0->Y and Y1->Y.
+
+    3. if experimental and observational data (self.only_obs=False), it adds
+    arrows X->Y0, X->Y1. If only observational data (self.only_obs=False),
+    it does not add those two arrows.
 
     The new bnet is assigned to self of this class and is called an
     ``imagined bnet".
@@ -40,11 +47,13 @@ class ImaginedBayesNet(BayesNet):
     and samples all possible evi_nd_to_state.values() for a fixed
     evi_nd_to_state.keys()
 
-    As mentioned earlier, this class adds to in_bnet either one (XY) or two
-    (XY0, XY1) constraint nodes. The pots of the constraint nodes are known.
-    They are fully specified by the 5 independent probablities in the input
-    list oe_data=[o1b0, o1b1, px1, e1b0, e1b1], where o1b0=O_{1|0}, o1b1=O_{
-    1|1}, px1=P(x=1), e1b0=E_{1|0}, e1b1=E_{1|1}.
+    As mentioned earlier, this class adds to in_bnet two new nodes  Y0,
+    Y1. The pots of these nodes are known. They are fully specified by
+    oe_data=[ o1b0z, o1b1z, px1z, e1b0z, e1b1z], where o1b0z=O_{1|0, z},
+    o1b1=O_{ 1|1, z}, px1bz=P( x=1|z), z=E_{1|0, z}, e1b1z=E_{1|1,
+    z}. o1b0z, o1b1z, px1z, e1b0z, e1b1z are 5 arrays of shape = (
+    number of states of Z, ). If Z doesn't exist, these 5 arrays become 5
+    scalars.
 
     Attributes
     ----------
@@ -58,10 +67,14 @@ class ImaginedBayesNet(BayesNet):
     nd_Y0 : BayesNode
     nd_Y1 : BayesNode
     oe_data : list[float]
-        [o1b0, o1b1, px1, e1b0, e1b1], oe=observational-experimental
+        [o1b0z, o1b1z, px1z, e1b0z, e1b1z], oe=observational-experimental,
+        dim(o1b0z)= dim(o1b1z)=dim(px1z)=dim(e1b0z)=dim(e1b1z)=size of node Z,
+        or 1 if in_bnet has no Z.
     only_obs : bool
-        True iff only obsevational data, no experimental data
+        True iff only observational data, no experimental data
     random_nodes : list[BayesNode]
+    size_Z : int
+        size (i.e., num of states) of node Z. Equal to 1 if no Z node.
 
     """
 
@@ -69,6 +82,7 @@ class ImaginedBayesNet(BayesNet):
                  in_bnet,
                  random_nodes,
                  evi_nd_to_state,
+                 size_Z,
                  oe_data,
                  only_obs=False):
         """
@@ -78,6 +92,7 @@ class ImaginedBayesNet(BayesNet):
         in_bnet : BayesNet
         random_nodes : list[BayesNode]
         evi_nd_to_state : dict[BayesNode, int]
+        size_Z : int
         oe_data : list[float]
         only_obs : bool
         """
@@ -87,22 +102,35 @@ class ImaginedBayesNet(BayesNet):
         self.evi_nd_to_state= evi_nd_to_state
         assert set(evi_nd_to_state.keys()).isdisjoint(set(random_nodes)),\
             "the sets of evidence nodes and random nodes must be disjoint"
+        self.size_Z = size_Z
         self.oe_data = oe_data
-        assert len(oe_data) == 5 and max(oe_data) <= 1 and min(oe_data) >=0,\
-            str(oe_data) + "must contain 5 probabilities"
+        assert len(oe_data) == 5, \
+            "oe_data must contain 5 vectors"
+        if self.size_Z > 1:
+            assert all([x.shape==self.size_Z for x in oe_data]),\
+                "oe_data must contain 5 vectors with " + \
+                str(self.size_Z) + " components in each vector."
+        else:
+            assert all([type(x)==float for x in oe_data]), \
+                "oe_data must contain 5 floats because self.size_Z==1"
+
         self.only_obs = only_obs
 
         self.nd_X= self.get_node_named("X")
         self.nd_Y = self.get_node_named("Y")
+        if self.size_Z > 1:
+            self.nd_Z = self.get_node_named("Z")
+        else:
+            self.nd_Z = None
         assert self.nd_X.has_child(self.nd_Y),\
             "node X must have node Y as child"
+        if self.size_Z >1:
+            assert self.nd_Z.size == self.size_Z,\
+            "size_Z input is not equal to the size of node Z in in_bnet"
 
         # these nodes will be created
         self.nd_Y0=None
         self.nd_Y1=None
-        self.nd_XY0 = None
-        self.nd_XY1 = None
-        self.nd_XY = None
         
         self.build_self()
 
@@ -121,35 +149,23 @@ class ImaginedBayesNet(BayesNet):
         self.nd_Y0 = BayesNode(max_id + 1, "Y0")
         self.nd_Y1 = BayesNode(max_id + 2, "Y1")
         self.add_nodes({self.nd_Y0, self.nd_Y1})
-        if not self.only_obs:
-            self.nd_XY0 = BayesNode(max_id + 3, "XY0")
-            self.nd_XY1 = BayesNode(max_id + 4, "XY1")
-            self.add_nodes({self.nd_XY0, self.nd_XY1})
-        else:
-            self.nd_XY = BayesNode(max_id + 3, "XY")
-            self.add_nodes({self.nd_XY})
 
-        parents_Y_minus_X = set(self.nd_Y.parents)
-        # parents_Y_minus_X contains nd_X at this point
-        parents_Y_minus_X.remove(self.nd_X)
-        self.nd_Y0.add_parents(parents_Y_minus_X)
-        self.nd_Y1.add_parents(parents_Y_minus_X)
+        if self.size_Z > 1:
+            if not self.only_obs:
+                self.nd_Y0.add_parent(self.nd_Z)
+                self.nd_Y1.add_parent(self.nd_Z)
 
         for nd in list(self.nd_Y.parents):
             self.nd_Y.remove_parent(nd)
         self.nd_Y.add_parents([self.nd_X, self.nd_Y0, self.nd_Y1])
 
-        if not self.only_obs:
-            self.nd_XY0.add_parents([self.nd_X, self.nd_Y0])
-            self.nd_XY1.add_parents([self.nd_X, self.nd_Y1])
-        else:
-            self.nd_XY.add_parents([self.nd_X, self.nd_Y])
-
         # next define pots for all new nodes
-        ord_pa_Yi = list(parents_Y_minus_X)
         for nd in [self.nd_Y0, self.nd_Y1]:
-            nd.potential = DiscreteCondPot(False, ord_pa_Yi + [nd])
-            nd.potential.pot_arr = np.zeros(shape=(2,)*(len(ord_pa_Yi)+1),
+            pa_li = []
+            if self.size_Z > 1:
+                pa_li = [self.nd_Z]
+            nd.potential = DiscreteCondPot(False, pa_li+ [nd])
+            nd.potential.pot_arr = np.zeros(shape=(2,)*(len(pa_li)+1),
                                       dtype=np.float64)
             nd.potential.set_to_random()
             nd.potential.normalize_self()
@@ -165,21 +181,6 @@ class ImaginedBayesNet(BayesNet):
                 pot_arr[x, y0, y1, y] = 1
         self.nd_Y.potential.pot_arr = pot_arr
 
-        if not self.only_obs:
-            self.nd_XY0.potential = DiscreteCondPot(False,
-                    [self.nd_X, self.nd_Y0, self.nd_XY0])
-            self.nd_XY0.potential.pot_arr =\
-                np.zeros(shape=(2, 2, 4), dtype=np.float64)
-
-            self.nd_XY1.potential = DiscreteCondPot(False,
-                    [self.nd_X, self.nd_Y1, self.nd_XY1])
-            self.nd_XY1.potential.pot_arr =\
-                np.zeros(shape=(2, 2, 4), dtype=np.float64)
-        else:
-            self.nd_XY.potential = DiscreteCondPot(False,
-                    [self.nd_X, self.nd_Y, self.nd_XY])
-            self.nd_XY.potential.pot_arr =\
-                np.zeros(shape=(2, 2, 4), dtype=np.float64)
 
         self.refresh_oe_data(self.oe_data)
 
@@ -233,20 +234,27 @@ class ImaginedBayesNet(BayesNet):
         if not self.only_obs:
             for c, x, y in itertools.product([0,1], repeat=3):
                 # P(Y_x=y|X=c)
-                xy = y + 2*x
                 if x == 0:
                     nd = self.nd_XY0
                 else:
                     nd = self.nd_XY1
-                if c==x:
-                    nd.potential[x, y, xy] = oybx[y, x]*px[x]
-                else:
-                    nd.potential[x, y, xy] = eybx[y, x] - oybx[y, x]*px[x]
+                for xy in [0,1]:
+                    if c==x:
+                        prob = oybx[y, x]*px[x]
+                        if xy == y + 2*x:
+                            nd.potential[x, y, xy] = prob
+                        else:
+                            nd.potential[x, y, xy] = (1-prob)/3
+                    else:
+
+                    else:
+                        nd.potential[x, y, xy] = eybx[y, x] - oybx[y, x]*px[x]
         else:
             for x, y in itertools.product([0, 1], repeat=2):
                 # P(x, y)
                 xy = y + 2 * x
                 self.nd_XY.potential[x, y, xy] = oybx[y, x]*px[x]
+
 
     def refresh_random_nodes(self):
         """
@@ -317,7 +325,7 @@ if __name__ == "__main__":
                                          random_nodes,
                                          evi_node_to_state,
                                          oe_data,
-                                         only_obs=False)
+                                         only_obs=True)
         imagined_bnet.draw(algo_num=1)
         for nd in imagined_bnet.nodes:
             print(nd.name, "parents=" + str([x.name for x in nd.parents]),
