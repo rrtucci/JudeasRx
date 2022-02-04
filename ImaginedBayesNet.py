@@ -281,7 +281,8 @@ class ImaginedBayesNet(BayesNet):
             nd.active_states = [val]
 
 if __name__ == "__main__":
-    from examples_cbnets.HuaDar import *
+    from graphviz import Source
+    from IPython.display import display
 
     def main():
         cl = BayesNode(0, name="Cloudy")
@@ -304,12 +305,12 @@ if __name__ == "__main__":
         nd_Y.potential = DiscreteCondPot(False, [sp, cl, nd_X, nd_Y])
         for nd in nodes:
             nd.potential.set_to_random()
-            nd.potential.normalize_self
+            nd.potential.normalize_self()
 
         in_bnet = BayesNet(nodes)
         in_bnet.draw(algo_num=1)
 
-        random_nodes = [cl, sp]
+        random_nodes = [cl]
         evi_node_to_state = {sp: 0}
         oe_data = [.3, .5, .7, .1, .9]
         imagined_bnet = ImaginedBayesNet(in_bnet,
@@ -318,12 +319,17 @@ if __name__ == "__main__":
                                          oe_data,
                                          only_obs=False)
         imagined_bnet.draw(algo_num=1)
-        # for nd in imagined_bnet.nodes:
-        #     print(nd.name,
-        #           [x.name for x in nd.parents],
-        #           [x.name for x in nd.children])
+        for nd in imagined_bnet.nodes:
+            print(nd.name,
+                  [x.name for x in nd.parents],
+                  [x.name for x in nd.children])
+            print(nd.potential.pot_arr)
+            print()
         path1 = 'examples_cbnets/tempo.dot'
         imagined_bnet.write_dot(path1)
+        graph =Source(open(path1).read())
+        graph.view(filename='examples_cbnets/tempo.gv')
+
     main()
 
 
