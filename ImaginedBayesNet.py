@@ -163,7 +163,7 @@ class ImaginedBayesNet(BayesNet):
         max_id = max(id_nums)
         self.nd_Y0 = BayesNode(max_id + 1, "Y0")
         self.nd_Y1 = BayesNode(max_id + 2, "Y1")
-        self.add_nodes({self.nd_Y1, self.nd_Y0Y1})
+        self.add_nodes({self.nd_Y1, self.nd_Y0})
         if self.use_Y0Y1:
             self.nd_Y0Y1 = BayesNode(max_id + 3, "Y0Y1")
             self.add_nodes({self.nd_Y0Y1})
@@ -254,10 +254,10 @@ class ImaginedBayesNet(BayesNet):
                         assert prob >= 0,\
                             "invalid oe_data"
                     nd.potential[coords_plus] = prob
-                    if list(coords)[0]==0 and x==0:
-                        print("nnbbh---coords,x,y,y_x=y at c, prob",
-                              coords_plus,
-                              f"y_{x}={y} at c={c}", prob)
+                    # if list(coords)[0]==0 and x==0:
+                    #     print("nnbbh---coords,x,y,y_x=y at c, prob",
+                    #           coords_plus,
+                    #           f"y_{x}={y} at c={c}", prob)
             else:
                 for x, y in itertools.product([0, 1], repeat=2):
                     # P(x, y)
