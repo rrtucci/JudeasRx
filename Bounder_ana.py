@@ -4,12 +4,13 @@ np.set_printoptions(precision=3, floatmode="fixed")
 
 class Bounder_ana:
     """
-    Bounder_ana= Bounder analytic, to distinguish it from Bounder_MC= Bounder
-    Monte Carlo. The theory and notation in this class is explained in the 2
-    chapters entitled "Personalized Treatment Effects" and "Personalized
-    Expected Utility" of my free open source book Bayesuvius. Those 2
-    chapters are totally based on work by Pearl, Tian and later Pearl, Li,
-    Mueller.
+    We call this class Bounder_ana= Bounder analytic, to distinguish it from
+    Bounder_MC= Bounder Monte Carlo.
+
+    The theory and notation in this class is explained in the 2 chapters
+    entitled "Personalized Treatment Effects" and "Personalized Expected
+    Utility" of my free open source book Bayesuvius. Those 2 chapters are
+    totally based on work by Pearl, Tian and later Pearl, Li, Mueller.
 
     https://qbnets.wordpress.com/2020/11/30/my-free-book-bayesuvius-on-bayesian-networks/
 

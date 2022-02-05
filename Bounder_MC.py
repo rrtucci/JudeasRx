@@ -10,9 +10,17 @@ import theano.tensor as tt
 
 class Bounder_MC:
     """
-    Bounder_MC= Bounder Monte Carlo, to distinguish it from Bounder_ana=
-    Bounder analytic.
+    Note: This class uses code in directories: nodes, graphs, potentials,
+    which was taken from my app Quantum Fog
+    https://github.com/artiste-qb-net/quantum-fog
+
+    This class also benifitted greatly from the following thread in the
+    PyMC3 Discourse
     https://discourse.pymc.io/t/bayes-nets-belief-networks-and-pymc/5150
+
+    We call this class Bounder_MC= Bounder Monte Carlo, to distinguish it
+    from Bounder_ana= Bounder analytic.
+
 
     Attributes
     ----------
