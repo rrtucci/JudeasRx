@@ -73,24 +73,27 @@ class Bounder_MC:
             for topo_index in topo_indices:
                 nd = topo_index_to_nd[topo_index]
                 nd_arr = None
-                nd_pa_list = nd.potential.ord_nodes
-                rv_pa_list = [nd_to_rv[nd1] for nd1 in nd_pa_list]
+                # fam = family = nd and its parents
+                nd_fam_list = nd.potential.ord_nodes
+                rv_fam_list = [nd_to_rv[nd1] for nd1 in nd_fam_list]
                 if nd in trol_list:
                     for k, nd in enumerate(trol_list):
                         active_state = trol_coords[k]
-                        num_parents = len(nd_pa_list)
+                        fam_size= len(nd_fam_list)
                         nd_arr = np.zeros(shape=nd.potential.pot_arr.shape)
-                        arr[active_state] = 1.0
+                        slicex = tuple([slice(None)]*(fam_size-1)+\
+                                       [active_state])
+                        nd_arr[slicex]=1.0
                 else:
                     nd_arr = nd.potential.pot_arr
 
-                if len(rv_pa_list) == 0:
+                if len(rv_fam_list) == 1:
                     nd_to_rv[nd] = pm.Categorical(nd.name, nd_arr)
                 else:
-                    rv_pa_tuple = tuple(rv_pa_list)
+                    rv_fam_tuple = tuple(rv_fam_list)
                     nd_to_rv[nd] = pm.Categorical(
-                        nd.name, lambda rv_pa_tuple:
-                        theano.shared(nd_arr)[rv_pa_tuple])
+                        nd.name, lambda rv_fam_tuple:
+                        theano.shared(nd_arr)[rv_fam_tuple])
 
     def estimate_PNS3_for_trol_coords(self, trol_coords):
         """
@@ -116,7 +119,7 @@ class Bounder_MC:
         
         return PNS, PN, PS
 
-    def estimate_PNS3_for_all_trol_cases(self):
+    def estimate_PNS3_for_all_trol_coords(self):
         """
 
         Returns
@@ -125,11 +128,9 @@ class Bounder_MC:
             np.array shape=(3, 2)
 
         """
-        trol_nd_size_list = [nd.size for nd in self.ord_trol_nodes]
         trol_coords_to_PNS3 = {}
-        for trol_coords in itertools.product(trol_nd_size_list):
-            trol_nd_to_state = dict(zip(self.ord_trol_nodes, trol_coords))
-            PNS, PN, PS = self.estimate_PNS3_for_trol_coords(trol_nd_to_state)
+        for trol_coords in itertools.product(trol_size_list):
+            PNS, PN, PS = self.estimate_PNS3_for_trol_coords(trol_cords)
             trol_coords_to_PNS3[trol_coords] = np.array([PNS, PN, PS])
 
         return trol_coords_to_PNS3
