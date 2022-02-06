@@ -27,7 +27,6 @@ class Bounder_MC:
     imagined_bnet : ImaginedBayesNet
     num_1world_samples : int
     num_worlds : int
-    ord_evi_nodes : list[BayesNode]
     pm_model : pm.Model
     """
 
@@ -44,65 +43,68 @@ class Bounder_MC:
         self.num_1world_samples = num_1world_samples
         self.num_worlds = num_worlds
         self.pm_model = None
-        self.ord_evi_nodes = list(imagined_bnet.evi_nd_to_state.keys())
-        self.evi_coords_to_PNS3_bds = None
+        self.trol_coords_to_PNS3_bds = None
 
-    def refresh_pm_model(self, evi_nd_to_state):
+    def refresh_pm_model(self, trol_coords):
         """
 
         Parameters
         ----------
-        evi_nd_to_state : dict[BayesNode, int]
+        trol_coords : tuple[int]
 
         Returns
         -------
         None
 
         """
-
         if self.pm_model is not None:
             del self.pm_model
         self.pm_model = pm.Model()
         # nd_to_rv = node to random variable
-        # this dictionary maps each BayesNode object to a
+        # this dictionary maps each BayesNode object in imagined_bnet to a
         # pymc3 random variable
         nd_to_rv = {}
         topo_index_to_nd = {}
-        for nd in self.imagined_bnet:
+        for nd in self.imagined_bnet.nodes:
             topo_index_to_nd[nd.topo_index] = nd
         topo_indices = list(topo_index_to_nd.keys()).sort()
+        trol_list = self.imagined_bnet.trol_list
         with self.pm_model:
             for topo_index in topo_indices:
-                nd = topo_index_to_nd(topo_index)
-                nd_pot = nd.potential
-                nd_parents = nd_pot.ord_nodes
-                rv_parents = tuple(nd_to_rv[pa_nd] for pa_nd in
-                                   nd_parents)
-                if nd in self.ord_evi_nodes:
-                    arr = np.zeros(shape=(nd.size,))
-                    arr[evi_nd_to_state[nd]] = 1.0
-                    nd_to_rv[nd] = pm.Categorical(nd.name, arr)
+                nd = topo_index_to_nd[topo_index]
+                nd_arr = None
+                nd_pa_list = nd.potential.ord_nodes
+                rv_pa_list = [nd_to_rv[nd1] for nd1 in nd_pa_list]
+                if nd in trol_list:
+                    for k, nd in enumerate(trol_list):
+                        active_state = trol_coords[k]
+                        num_parents = len(nd_pa_list)
+                        nd_arr = np.zeros(shape=nd.potential.pot_arr.shape)
+                        arr[active_state] = 1.0
                 else:
-                    if len(rv_parents) == 0:
-                        nd_to_rv[nd] = pm.Categorical(nd.name, nd.pot_arr)
-                    else:
-                        nd_to_rv[nd] = pm.Categorical(
-                            nd.name, lambda rv_parents:
-                            theano.shared(nd.pot_arr)[rv_parents])
+                    nd_arr = nd.potential.pot_arr
 
-    def estimate_PNS3_for_one_evi_case(self, evi_nd_to_state):
+                if len(rv_pa_list) == 0:
+                    nd_to_rv[nd] = pm.Categorical(nd.name, nd_arr)
+                else:
+                    rv_pa_tuple = tuple(rv_pa_list)
+                    nd_to_rv[nd] = pm.Categorical(
+                        nd.name, lambda rv_pa_tuple:
+                        theano.shared(nd_arr)[rv_pa_tuple])
+
+    def estimate_PNS3_for_trol_coords(self, trol_coords):
         """
 
         Parameters
         ----------
-        evi_nd_to_state : dict[BayesNode, int]
+        trol_coords : dict[BayesNode, int]
 
         Returns
         -------
         None
 
         """
-        self.refresh_pm_model(evi_nd_to_state)
+        self.refresh_pm_model(trol_coords)
         trace = pm.sample_prior_predictive(self.num_1world_samples)
 
         PN = trace['Y0'][trace['X']==1 & trace['Y']==1].mean()[0]
@@ -114,7 +116,7 @@ class Bounder_MC:
         
         return PNS, PN, PS
 
-    def estimate_PNS3_for_all_evi_cases(self):
+    def estimate_PNS3_for_all_trol_cases(self):
         """
 
         Returns
@@ -123,14 +125,14 @@ class Bounder_MC:
             np.array shape=(3, 2)
 
         """
-        evi_nd_size_list = [nd.size for nd in self.ord_evi_nodes]
-        evi_coords_to_PNS3 = {}
-        for evi_coords in itertools.product(evi_nd_size_list):
-            evi_nd_to_state = dict(zip(self.ord_evi_nodes, evi_coords))
-            PNS, PN, PS = self.estimate_PNS3_for_one_evi_case(evi_nd_to_state)
-            evi_coords_to_PNS3[evi_coords] = np.array([PNS, PN, PS])
+        trol_nd_size_list = [nd.size for nd in self.ord_trol_nodes]
+        trol_coords_to_PNS3 = {}
+        for trol_coords in itertools.product(trol_nd_size_list):
+            trol_nd_to_state = dict(zip(self.ord_trol_nodes, trol_coords))
+            PNS, PN, PS = self.estimate_PNS3_for_trol_coords(trol_nd_to_state)
+            trol_coords_to_PNS3[trol_coords] = np.array([PNS, PN, PS])
 
-        return evi_coords_to_PNS3
+        return trol_coords_to_PNS3
 
     def get_PNS3_bds(self):
         """
@@ -141,7 +143,7 @@ class Bounder_MC:
             np.array shape=(3, 2)
 
         """
-        return self.evi_coords_to_PNS3_bds
+        return self.trol_coords_to_PNS3_bds
 
     def set_PNS3_bds(self):
         """
@@ -153,9 +155,9 @@ class Bounder_MC:
         """
         for world in range(self.num_worlds):
             self.imagined_bnet.refresh_random_nodes()
-            evi_coords_to_PNS3 = self.estimate_PNS3_for_all_evi_cases()
-            for evi_coords, PNS3 in evi_coords_to_PNS3.items():
-                PNS3_bds = self.evi_coords_to_PNS3_bds[evi_coords]
+            trol_coords_to_PNS3 = self.estimate_PNS3_for_all_trol_cases()
+            for trol_coords, PNS3 in trol_coords_to_PNS3.items():
+                PNS3_bds = self.trol_coords_to_PNS3_bds[trol_coords]
                 for k in range(3):
                     low, high = PNS3_bds[k]
                     if PNS3[k] < low:
