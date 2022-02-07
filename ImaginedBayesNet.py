@@ -1,5 +1,7 @@
 from graphs.BayesNet import *
 import itertools
+from graphviz import Source
+
 
 class ImaginedBayesNet(BayesNet):
     """
@@ -107,6 +109,7 @@ class ImaginedBayesNet(BayesNet):
                  use_Y0Y1=True,
                  only_obs=False):
         """
+        Constructor.
 
         Parameters
         ----------
@@ -118,31 +121,31 @@ class ImaginedBayesNet(BayesNet):
         only_obs : bool
         """
         BayesNet.__init__(self, in_bnet.nodes)
-        self.nd_X= self.get_node_named("X")
+        self.nd_X = self.get_node_named("X")
         self.nd_Y = self.get_node_named("Y")
-        assert self.nd_X.has_child(self.nd_Y),\
+        assert self.nd_X.has_child(self.nd_Y), \
             "node X must have node Y as child"
 
         # these nodes will be created by build_self()
-        self.nd_Y0=None
-        self.nd_Y1=None
+        self.nd_Y0 = None
+        self.nd_Y1 = None
         self.nd_Y0Y1 = None
 
         self.fixed_nd_list = fixed_nd_list
         self.trol_list = trol_list
-        assert set(trol_list).isdisjoint(set(fixed_nd_list)),\
+        assert set(trol_list).isdisjoint(set(fixed_nd_list)), \
             "the sets of fixed nodes and control nodes must be disjoint"
 
         assert self.nd_X not in self.fixed_nd_list \
-            and self.nd_Y not in self.fixed_nd_list,\
+               and self.nd_Y not in self.fixed_nd_list, \
             "nodes X and Y cannot be fixed nodes"
 
         assert self.nd_X not in self.trol_list \
-            and self.nd_Y not in self.trol_list,\
+               and self.nd_Y not in self.trol_list, \
             "nodes X and Y cannot be control nodes"
 
-        self.random_nd_list = list(in_bnet.nodes - set(fixed_nd_list)\
-                               -set(trol_list) - {self.nd_X, self.nd_Y})
+        self.random_nd_list = list(in_bnet.nodes - set(fixed_nd_list) \
+                                   - set(trol_list) - {self.nd_X, self.nd_Y})
 
         self.trol_coords_to_oe_data = trol_coords_to_oe_data
         self.use_Y0Y1 = use_Y0Y1
@@ -185,26 +188,30 @@ class ImaginedBayesNet(BayesNet):
             self.nd_X.remove_parent(nd)
         self.nd_X.add_parents(self.trol_list)
 
+        self.topological_sort()
+
         # define pot for Y
         self.nd_Y.potential = DiscreteCondPot(False,
-            [self.nd_X, self.nd_Y0, self.nd_Y1, self.nd_Y])
+                                              [self.nd_X, self.nd_Y0,
+                                               self.nd_Y1, self.nd_Y])
         self.nd_Y.potential.pot_arr = np.zeros(shape=(2, 2, 2, 2),
                                                dtype=np.float64)
-        for prod in itertools.product([0,1], repeat=4):
+        for prod in itertools.product([0, 1], repeat=4):
             x, y0, y1, y = prod
-            if y == y0*(1-x) + y1*x:
+            if y == y0 * (1 - x) + y1 * x:
                 self.nd_Y.potential.pot_arr[x, y0, y1, y] = 1
 
         # define pot for Y0Y1 and add Y0Y1 to random node list
         if self.use_Y0Y1:
             self.nd_Y0Y1.potential = DiscreteCondPot(False,
-                [self.nd_Y0, self.nd_Y1, self.nd_Y0Y1] )
-            self.nd_Y0Y1.potential.pot_arr = np.zeros(shape=(2,2,4),
-                                         dtype=np.float64)
+                                                     [self.nd_Y0, self.nd_Y1,
+                                                      self.nd_Y0Y1])
+            self.nd_Y0Y1.potential.pot_arr = np.zeros(shape=(2, 2, 4),
+                                                      dtype=np.float64)
             self.nd_Y0Y1.potential.set_to_random()
             self.nd_Y0Y1.potential.normalize_self()
             self.random_nd_list.append(self.nd_Y0Y1)
-        
+
         # define pots without pot_arr for Y0, Y1, X
         for nd in [self.nd_Y0, self.nd_Y1]:
             nd_list = list(self.trol_list)
@@ -216,7 +223,7 @@ class ImaginedBayesNet(BayesNet):
             nd_size_list.append(2)
             nd.potential = DiscreteCondPot(False, nd_list)
             nd.potential.pot_arr = np.zeros(shape=nd_size_list,
-                                      dtype=np.float64)
+                                            dtype=np.float64)
         nd_list = list(self.trol_list)
         nd_size_list = [nd1.size for nd1 in self.trol_list]
         nd_list.append(self.nd_X)
@@ -229,29 +236,29 @@ class ImaginedBayesNet(BayesNet):
             assert len(coords) == len(self.trol_list), \
                 "trol_coords in trol_coords_to_oe_data have wrong length"
             assert len(oe_data) == 5 \
-                   and max(oe_data)<=1 \
-                   and min(oe_data)>=0,\
+                   and max(oe_data) <= 1 \
+                   and min(oe_data) >= 0, \
                 "oe_data in trol_coords_to_oe_data must be 5 probabilities"
             oybx, px, eybx = ImaginedBayesNet.get_oe_arrays(oe_data)
             # print("xxxxccc", oybx, px, eybx)
 
             for x in [0, 1]:
-                coords_plus = tuple(list(coords)+[x])
-                self.nd_X.potential.pot_arr[coords_plus]= px[x]
+                coords_plus = tuple(list(coords) + [x])
+                self.nd_X.potential.pot_arr[coords_plus] = px[x]
 
             if not self.only_obs:
-                for c, x, y in itertools.product([0,1], repeat=3):
+                for c, x, y in itertools.product([0, 1], repeat=3):
                     # P(Y_x=y|X=c, trol_coords)
                     if x == 0:
                         nd = self.nd_Y0
                     else:
                         nd = self.nd_Y1
-                    coords_plus = tuple(list(coords)+[c,y])
-                    if c==x:
+                    coords_plus = tuple(list(coords) + [c, y])
+                    if c == x:
                         prob = oybx[y, c]
                     else:
-                        prob = (eybx[y, c] - oybx[y, c]*px[c])/px[1-c]
-                        assert prob >= 0,\
+                        prob = (eybx[y, c] - oybx[y, c] * px[c]) / px[1 - c]
+                        assert prob >= 0, \
                             "invalid oe_data"
                     nd.potential[coords_plus] = prob
                     # if list(coords)[0]==0 and x==0:
@@ -267,7 +274,7 @@ class ImaginedBayesNet(BayesNet):
                         nd = self.nd_Y1
                     coords_plus = tuple(list(coords) + [y])
                     nd.potential[coords_plus] = oybx[y, x]
-                    
+
     @staticmethod
     def get_oe_arrays(oe_data):
         """
@@ -308,11 +315,8 @@ class ImaginedBayesNet(BayesNet):
             nd.potential.set_to_random()
             nd.potential.normalize_self()
 
-if __name__ == "__main__":
-    from graphviz import Source
-    from IPython.display import display
-
-    def main():
+    @staticmethod
+    def build_test_imagined_bnet(draw=False):
         cl = BayesNode(0, name="Cloudy")
         sp = BayesNode(1, name="Sprinkler")
         nd_X = BayesNode(2, name="X")
@@ -335,30 +339,39 @@ if __name__ == "__main__":
         for nd in nodes:
             nd.potential.set_to_random()
             nd.potential.normalize_self()
-
-        in_bnet.draw(algo_num=1)
+        if draw:
+            in_bnet.draw(algo_num=1)
 
         fixed_nd_list = [cl]
         trol_list = [sp]
         trol_coords_to_oe_data = {
-            (0,):[.48,.51,.53,.47,.5],
-            (1,):[.5,.5,.5,.5,.5]
+            (0,): [.48, .51, .53, .47, .5],
+            (1,): [.5, .5, .5, .5, .5]
         }
         imagined_bnet = ImaginedBayesNet(in_bnet,
                                          fixed_nd_list,
                                          trol_list,
                                          trol_coords_to_oe_data,
                                          only_obs=False)
-        imagined_bnet.draw(algo_num=1)
+        if draw:
+            imagined_bnet.draw(algo_num=1)
+            path1 = 'examples_cbnets/tempo.dot'
+            imagined_bnet.write_dot(path1)
+            graph = Source(open(path1).read())
+            graph.view(filename='examples_cbnets/tempo.gv')
+        return imagined_bnet
+
+
+if __name__ == "__main__":
+
+    def main():
+        imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet(draw=True)
         for nd in imagined_bnet.nodes:
             print(nd.name, ", parents=" + str([x.name for x in nd.parents]),
                   ", children=" + str([x.name for x in nd.children]))
             print(nd.potential.pot_arr)
             print()
-        path1 = 'examples_cbnets/tempo.dot'
-        imagined_bnet.write_dot(path1)
-        graph =Source(open(path1).read())
-        graph.view(filename='examples_cbnets/tempo.gv')
+
 
     main()
 
