@@ -84,10 +84,10 @@ class Bounder_MC:
         num_nds = len(self.imagined_bnet.nodes)
         for ind in range(num_nds):
             nd = self.topo_index_to_nd[ind]
-            print("mmmkk", ind, nd.name,
-                  "parents=", [x.name for x in nd.parents],
-                  "children=", [x.name for x in nd.children], '\n',
-                  nd.potential.pot_arr)
+            # print("mmmkk", ind, nd.name,
+            #       "parents=", [x.name for x in nd.parents],
+            #       "children=", [x.name for x in nd.children], '\n',
+            #       nd.potential.pot_arr)
         self.trol_list = self.imagined_bnet.trol_list
         self.trol_to_pos = {trol: pos for pos, trol in enumerate(
             self.trol_list)}
@@ -121,39 +121,38 @@ class Bounder_MC:
             num_nds = len(self.imagined_bnet.nodes)
             for topo_index in range(num_nds):
                 nd = self.topo_index_to_nd[topo_index]
-                # fam = family = nd and its parents
-                nd_fam_list = nd.potential.ord_nodes
-                print("llhhhf", topo_index, nd.name, [x.name for x in
-                                                      nd_fam_list])
+                print("llhhhf", topo_index, nd.name)
+                nd_pa_list = nd.potential.ord_nodes[:-1]
+                num_parents = len(nd_pa_list)
                 nd_arr = None
                 if nd in self.trol_list:
                     active_state = trol_coords[self.trol_to_pos[nd]]
-                    fam_size = len(nd_fam_list)
+
                     nd_arr = np.zeros(shape=nd.potential.pot_arr.shape)
                     # slicex = tuple([slice(None), slice(None), ...,
                     # slice(None), active_state])
-                    slicex = tuple([slice(None)] * (fam_size - 1) + \
+                    slicex = tuple([slice(None)] * num_parents+ \
                                    [active_state])
-                    # print('aaasss', fam_size, active_state, slicex)
+                    # print('aaasss', num_parents, active_state, slicex)
                     nd_arr[slicex] = 1.0
                 else:
                     nd_arr = nd.potential.pot_arr
-                print("vvvvv", nd.name, nd_arr)
+                # print("vvvvv", nd.name, nd_arr)
 
-                if len(nd_fam_list) == 1:
+                if num_parents == 0:
                     nd_to_rv[nd] = pm.Categorical(nd.name, nd_arr)
-                    print("dddee", nd.name, nd_arr)
+                    # print("dxxxx", nd.name, nd_arr)
                 else:
-                    rv_fam_tuple = tuple(rv_fam_list)
                     lookup_table = theano.shared(np.asarray(nd_arr))
-                    print("dddee", nd.name, lookup_table.get_value())
+                    # print("dxxxx", nd.name, lookup_table.get_value())
 
-                    def fun(rv_fam_tuple):
-                        return lookup_table[rv_fam_tuple]
+                    rv_pa_list = [nd_to_rv[nd1] for nd1 in nd_pa_list]
+                    def fun(*rv_pa_list):
+                        return lookup_table[tuple(rv_pa_list)]
 
                     nd_to_rv[nd] = pm.Categorical(
-                        nd.name, fun(rv_fam_tuple))
-                rv_fam_list = [nd_to_rv[nd1] for nd1 in nd_fam_list]
+                        nd.name, fun(*rv_pa_list))
+
 
     def estimate_PNS3_for_trol_coords(self, trol_coords):
         """
@@ -170,16 +169,17 @@ class Bounder_MC:
 
         """
         self.refresh_pm_model(trol_coords)
-        trace = pm.sample_prior_predictive(self.num_1world_samples)
+        with self.pm_model:
+            trace = pm.sample_prior_predictive(self.num_1world_samples)
 
-        PN = trace['Y0'][trace['X'] == 1 & trace['Y'] == 1].mean()[0]
-        PS = trace['Y1'][trace['X'] == 0 & trace['Y'] == 0].mean()[1]
+            PN = trace['Y0'][trace['X'] == 1 & trace['Y'] == 1].mean()[0]
+            PS = trace['Y1'][trace['X'] == 0 & trace['Y'] == 0].mean()[1]
 
-        prob_Y0_is_0 = trace['Y0'].mean()[0]
-        prob_Y1_is_1_if_Y0_is_0 = trace['Y1'][trace['Y0'] == 0].mean()[1]
-        PNS = prob_Y1_is_1_if_Y0_is_0 * prob_Y0_is_0
+            prob_Y0_is_0 = trace['Y0'].mean()[0]
+            prob_Y1_is_1_if_Y0_is_0 = trace['Y1'][trace['Y0'] == 0].mean()[1]
+            PNS = prob_Y1_is_1_if_Y0_is_0 * prob_Y0_is_0
 
-        return PNS, PN, PS
+            return PNS, PN, PS
 
     def estimate_PNS3_for_all_trol_coords(self):
         """
