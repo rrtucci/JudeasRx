@@ -30,10 +30,14 @@ class Bounder_MC:
     and potentials, but QFog uses Bayesian networks whereas Theano uses
     block diagrams. (rv=random variable, TPM=Transition Probability matrix)
 
-    Bayesian network: node=rv=TPM=potential, arrows=indices of node
+    block diagram -> Bayesian network
+    rvs live in arrows, TPMs live in nodes-> both rvs and TPMs live in nodes
+    arrow=rv -> arrow just a mapping thing, nothing lives there
+    node= theano function or shared array -> TPM
+    shared array node -> general TPM
+    function node -> determinstic TPM
 
-    block diagram: node=theano function or shared array=potential,
-    arrows=rvs=indices of node
+
 
 
 
@@ -144,14 +148,12 @@ class Bounder_MC:
                     # print("dxxxx", nd.name, nd_arr)
                 else:
                     lookup_table = theano.shared(np.asarray(nd_arr))
-                    # print("dxxxx", nd.name, lookup_table.get_value())
-
-                    rv_pa_list = [nd_to_rv[nd1] for nd1 in nd_pa_list]
                     def fun(*rv_pa_list):
                         return lookup_table[tuple(rv_pa_list)]
+                    print("lllkk", nd.name, fun(*([0]*num_parents)))
 
-                    nd_to_rv[nd] = pm.Categorical(
-                        nd.name, fun(*rv_pa_list))
+                    rv_pa_list = [nd_to_rv[nd1] for nd1 in nd_pa_list]
+                    nd_to_rv[nd] = pm.Categorical(nd.name, fun(*rv_pa_list))
 
 
     def estimate_PNS3_for_trol_coords(self, trol_coords):
@@ -240,14 +242,27 @@ class Bounder_MC:
 
 
 if __name__ == "__main__":
-    def main():
+    def main1():
         imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet()
         # print("kkkll", imagined_bnet.nodes)
         bder = Bounder_MC(imagined_bnet,
-                          num_1world_samples=10,
-                          num_worlds=100)
+                          num_1world_samples=100,
+                          num_worlds=1)
         bder.set_PNS3_bds()
         print(bder.get_PNS3_bds())
 
+    def main2():
+        lookup_table = theano.shared(np.asarray([
+            [[.99, .01], [.1, .9]],
+            [[.9, .1], [.1, .9]]]))
+        print(lookup_table.get_value()[0,0])
 
-    main()
+        def fun1(*pa_list):
+            return lookup_table[tuple(pa_list)]
+        print("fun1", fun1(1,0))
+
+        def fun2(p1, p2):
+            return lookup_table[p1, p2]
+        print("fun2", fun2(1,0))
+
+    main2()
