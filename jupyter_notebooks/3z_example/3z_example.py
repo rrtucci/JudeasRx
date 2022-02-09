@@ -6,7 +6,7 @@ df = pd.read_csv('3z_example.csv')
 print(df, '\n')
 
 alp_y0_y1 = np.array([[.5, -.4], [.2, .1]])
-cer = Comparer.create_from_file('3z_example.csv', 
+cer = Comparer.create_from_file('3z_example.csv',
                                 alp_y0_y1=alp_y0_y1,
                                 only_obs=False,
                                 exogeneity=False,
