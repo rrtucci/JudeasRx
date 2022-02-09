@@ -48,13 +48,13 @@ strings
 attached to the Python code to learn how to use that part of JudeasRx. A 
 Jupyter notebook with an example with 3 strata is provided.
       
-## Extension to Monte Carlo evaluation of bounds for a specfic DAG
+## Extension to Monte Carlo evaluation of bounds for a specific DAG
 
 So we have described only how JudeasRx can calculate *analytically* bounds for 
 PNS, PN and PS, for very broad classes of DAGs (directed acyclc graphs). If 
 one assumes a specific DAG, those bounds can be made tighter. JudeasRx can 
 also calculate *stochastically* 
-bounds PNS, PN and PS, for a specfic DAG. It does this using the very 
+bounds for PNS, PN and PS, for a specfic DAG. It does this using the very 
 mature Python library 
 for doing MCMC (Markov Chain Monte Carlo), PyMC3. A Jupyter notebook with 
 an example of this is provided.
