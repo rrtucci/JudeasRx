@@ -9,7 +9,6 @@ import theano
 
 np.set_printoptions(precision=3, floatmode="fixed")
 
-
 # Installing pymc3 correctly proved to be a bit tricky.
 # See
 # https://github.com/pymc-devs/pymc/wiki/Installation-Guide-%28Linux%29
@@ -19,6 +18,9 @@ np.set_printoptions(precision=3, floatmode="fixed")
 # conda install pydotplus
 # conda install python-graphviz
 # conda install pydot
+
+# ran into trouble installing jupyter lab in conda virtual env. This solved it
+# https://stackoverflow.com/questions/68261254/conda-error-sysconfigdata-x86-64-conda-linux-gnu
 
 class Bounder_MC:
     """
