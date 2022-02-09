@@ -8,6 +8,7 @@ import itertools
 import theano
 import theano.tensor as tt
 from pprint import pprint
+np.set_printoptions(precision=3, floatmode="fixed")
 
 # I set up conda virtual environment with Python 3.9
 # then used: conda install -c conda-forge pymc3 theano-pymc mkl mkl-service
@@ -259,7 +260,7 @@ if __name__ == "__main__":
         # print("kkkll", imagined_bnet.nodes)
         bder = Bounder_MC(imagined_bnet,
                           num_1world_samples=1000,
-                          num_worlds=20)
+                          num_worlds=2)
         bder.set_PNS3_bds()
         print("control nodes:", [nd.name for nd in bder.trol_list])
         pprint(bder.get_PNS3_bds())
