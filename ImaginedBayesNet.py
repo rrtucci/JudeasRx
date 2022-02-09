@@ -3,7 +3,6 @@ import itertools
 from graphviz import Source
 
 
-
 class ImaginedBayesNet(BayesNet):
     """
     Note: This class uses code in directories: nodes, graphs, potentials,
@@ -12,7 +11,7 @@ class ImaginedBayesNet(BayesNet):
 
     This class takes as input a BayesNet object called 'in_bnet' with nodes
     X, Y and an arrow X->Y.  This class modifies in_bnet. The new bnet is
-    assigned to self of this class and is called an ``imagined bnet".
+    assigned to self of this class and is called an "imagined bnet".
 
     Let trols_list be a list of control nodes. trol nodes should be selected
     judiciously from the set of all nodes of in_bnet. See Judea Pearl's
@@ -138,14 +137,14 @@ class ImaginedBayesNet(BayesNet):
             "the sets of fixed nodes and control nodes must be disjoint"
 
         assert self.nd_X not in self.fixed_nd_list \
-               and self.nd_Y not in self.fixed_nd_list, \
-            "nodes X and Y cannot be fixed nodes"
+                and self.nd_Y not in self.fixed_nd_list, \
+                "nodes X and Y cannot be fixed nodes"
 
         assert self.nd_X not in self.trol_list \
-               and self.nd_Y not in self.trol_list, \
-            "nodes X and Y cannot be control nodes"
+                and self.nd_Y not in self.trol_list, \
+                "nodes X and Y cannot be control nodes"
 
-        self.random_nd_list = list(in_bnet.nodes - set(fixed_nd_list) \
+        self.random_nd_list = list(in_bnet.nodes - set(fixed_nd_list)
                                    - set(trol_list) - {self.nd_X, self.nd_Y})
 
         self.trol_coords_to_oe_data = trol_coords_to_oe_data
@@ -237,9 +236,9 @@ class ImaginedBayesNet(BayesNet):
             assert len(coords) == len(self.trol_list), \
                 "trol_coords in trol_coords_to_oe_data have wrong length"
             assert len(oe_data) == 5 \
-                   and max(oe_data) <= 1 \
-                   and min(oe_data) >= 0, \
-                "oe_data in trol_coords_to_oe_data must be 5 probabilities"
+                    and max(oe_data) <= 1 \
+                    and min(oe_data) >= 0, \
+                    "oe_data in trol_coords_to_oe_data must be 5 probabilities"
             oybx, px, eybx = ImaginedBayesNet.get_oe_arrays(oe_data)
             # print("xxxxccc", oybx, px, eybx)
 
@@ -372,7 +371,6 @@ if __name__ == "__main__":
                   ", children=" + str([x.name for x in nd.children]))
             print(nd.potential.pot_arr)
             print()
-
 
     main()
 
