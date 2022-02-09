@@ -316,7 +316,22 @@ class ImaginedBayesNet(BayesNet):
             nd.potential.normalize_self()
 
     @staticmethod
-    def build_test_imagined_bnet(draw=False):
+    def build_test_imagined_bnet(draw=False, use_Y0Y1=True, only_obs=False):
+        """
+        This method builds an imagined bnet from a simple example of an
+        input bnet.
+
+        Parameters
+        ----------
+        draw : bool
+            True iff draw both input bnet and imagined bnet
+        use_Y0Y1 : bool
+        only_obs : bool
+
+        Returns
+        -------
+
+        """
         cl = BayesNode(0, name="Cloudy")
         sp = BayesNode(1, name="Sprinkler")
         nd_X = BayesNode(2, name="X")
@@ -342,7 +357,7 @@ class ImaginedBayesNet(BayesNet):
         if draw:
             in_bnet.draw(algo_num=1)
 
-        fixed_nd_list = [cl]
+        fixed_nd_list = []
         trol_list = [sp]
         trol_coords_to_oe_data = {
             (0,): [.48, .51, .53, .47, .5],
@@ -352,20 +367,22 @@ class ImaginedBayesNet(BayesNet):
                                          fixed_nd_list,
                                          trol_list,
                                          trol_coords_to_oe_data,
-                                         only_obs=False)
+                                         use_Y0Y1,
+                                         only_obs)
         if draw:
             imagined_bnet.draw(algo_num=1)
-            path1 = 'examples_cbnets/tempo.dot'
+            path1 = './tempo.dot'
             imagined_bnet.write_dot(path1)
             graph = Source(open(path1).read())
-            graph.view(filename='examples_cbnets/tempo.gv')
+            graph.view(filename='./tempo.gv')
         return imagined_bnet
 
 
 if __name__ == "__main__":
 
     def main():
-        imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet(draw=True)
+        imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet(
+            draw=True, use_Y0Y1=True, only_obs=False)
         for nd in imagined_bnet.nodes:
             print(nd.name, ", parents=" + str([x.name for x in nd.parents]),
                   ", children=" + str([x.name for x in nd.children]))

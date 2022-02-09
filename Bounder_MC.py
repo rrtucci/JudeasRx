@@ -59,7 +59,7 @@ class Bounder_MC:
     For each world, this class loops over a pm model for each element of the
     cartesian product of all the states of each control node. We refer to
     the elements of that cartesian product as the trol coords ( i.e.,
-    control coordinates). The control nodes that reprent the axes of a trol
+    control coordinates). The control nodes that are the axes of a trol
     coord are stored in self.trol_list.
 
     Attributes
@@ -75,7 +75,7 @@ class Bounder_MC:
     topo_index_to_nd : dict[int, BayesNode]
         dictionary mapping topological index to node
     trol_coords_to_PNS3_bds : dict[list[int], np.array]
-        np.array shape=(3, 2)  dictionary mapping control coordinates to
+        np.array of shape=(3, 2). dictionary mapping control coordinates to
         PNS3 bounds
     trol_list : list[BayesNode]
         list of control nodes
@@ -283,11 +283,12 @@ class Bounder_MC:
 
 if __name__ == "__main__":
     def main1():
-        imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet()
+        imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet(
+            draw=False, use_Y0Y1=True, only_obs=False)
         # print("kkkll", imagined_bnet.nodes)
         bder = Bounder_MC(imagined_bnet,
                           num_1world_samples=1000,
-                          num_worlds=2)
+                          num_worlds=5)
         bder.set_PNS3_bds()
         print("control nodes:", [nd.name for nd in bder.trol_list])
         pprint(bder.get_PNS3_bds())
