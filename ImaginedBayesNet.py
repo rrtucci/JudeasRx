@@ -1,6 +1,7 @@
 from graphs.BayesNet import *
 import itertools
-# from graphviz import Source
+from graphviz import Source
+
 
 
 class ImaginedBayesNet(BayesNet):
@@ -353,12 +354,12 @@ class ImaginedBayesNet(BayesNet):
                                          trol_list,
                                          trol_coords_to_oe_data,
                                          only_obs=False)
-        # if draw:
-            # imagined_bnet.draw(algo_num=1)
-            # path1 = 'examples_cbnets/tempo.dot'
-            # imagined_bnet.write_dot(path1)
-            # graph = Source(open(path1).read())
-            # graph.view(filename='examples_cbnets/tempo.gv')
+        if draw:
+            imagined_bnet.draw(algo_num=1)
+            path1 = 'examples_cbnets/tempo.dot'
+            imagined_bnet.write_dot(path1)
+            graph = Source(open(path1).read())
+            graph.view(filename='examples_cbnets/tempo.gv')
         return imagined_bnet
 
 

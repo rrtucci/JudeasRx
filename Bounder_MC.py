@@ -1,21 +1,22 @@
-from potentials.DiscreteUniPot import *
-from potentials.DiscreteCondPot import *
 from ImaginedBayesNet import *
 
 import numpy as np
-import pymc3 as pm
 import itertools
-import theano
-import theano.tensor as tt
-from pprint import pprint
+from pprint import pprint  
 np.set_printoptions(precision=3, floatmode="fixed")
 
-# I set up conda virtual environment with Python 3.9
-# then used: conda install -c conda-forge pymc3 theano-pymc mkl mkl-service
-# also had to install: pydotplus, graphviz
+import pymc3 as pm 
+import theano
 
-
-
+# Installing pymc3 correctly proved to be a bit tricky.
+# See
+# https://github.com/pymc-devs/pymc/wiki/Installation-Guide-%28Linux%29
+# I set up a conda virtual environment with Python 3.9. Then used:
+# conda install -c conda-forge pymc3 theano-pymc mkl mkl-service
+# conda install graphviz
+# conda install pydotplus
+# conda install python-graphviz
+# conda install pydot
 
 class Bounder_MC:
     """
@@ -26,7 +27,6 @@ class Bounder_MC:
     This class also benifitted from the following thread in the
     PyMC3 Discourse
     https://discourse.pymc.io/t/bayes-nets-belief-networks-and-pymc/5150
-    https://discourse.pymc.io/t/typeerror-unknown-parameter-type-class-theano-tensor-var-tensorvariable/6745/2
 
     We call this class Bounder_MC= Bounder Monte Carlo, to distinguish it
     from Bounder_ana= Bounder analytic.
@@ -41,10 +41,6 @@ class Bounder_MC:
     node= theano function or shared array -> TPM
     shared array node -> general TPM
     function node -> determinstic TPM
-
-
-
-
 
     Attributes
     ----------
