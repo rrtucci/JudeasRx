@@ -7,10 +7,13 @@ import pymc3 as pm
 import itertools
 import theano
 import theano.tensor as tt
+from pprint import pprint
+
+# I set up conda virtual environment with Python 3.9
+# then used: conda install -c conda-forge pymc3 theano-pymc mkl mkl-service
+# also had to install: pydotplus, graphviz
 
 
-# pymc3 refused to be imported until I used an older version
-# of arviz than the latest. I had to use arviz=0.6.1
 
 
 class Bounder_MC:
@@ -22,6 +25,7 @@ class Bounder_MC:
     This class also benifitted from the following thread in the
     PyMC3 Discourse
     https://discourse.pymc.io/t/bayes-nets-belief-networks-and-pymc/5150
+    https://discourse.pymc.io/t/typeerror-unknown-parameter-type-class-theano-tensor-var-tensorvariable/6745/2
 
     We call this class Bounder_MC= Bounder Monte Carlo, to distinguish it
     from Bounder_ana= Bounder analytic.
@@ -77,9 +81,9 @@ class Bounder_MC:
                            self.imagined_bnet.trol_list]
         # assume that initially, 0<= PNS <=1, 0 <= PN <= 1, 0 <= PS <= 1
         for trol_coords in itertools.product(*trol_range_list):
-            self.trol_coords_to_PNS3_bds[trol_coords] = np.array([[0, 1.],
-                                                                  [0, 1.],
-                                                                  [0, 1.]])
+            self.trol_coords_to_PNS3_bds[trol_coords] = np.array([[1., 0],
+                                                                  [1., 0],
+                                                                  [1., 0]])
 
         self.topo_index_to_nd = {}
         for nd in self.imagined_bnet.nodes:
@@ -125,7 +129,7 @@ class Bounder_MC:
             num_nds = len(self.imagined_bnet.nodes)
             for topo_index in range(num_nds):
                 nd = self.topo_index_to_nd[topo_index]
-                print("llhhhf", topo_index, nd.name)
+                # print("llhhhf", topo_index, nd.name)
                 nd_pa_list = nd.potential.ord_nodes[:-1]
                 num_parents = len(nd_pa_list)
                 nd_arr = None
@@ -150,7 +154,7 @@ class Bounder_MC:
                     lookup_table = theano.shared(np.asarray(nd_arr))
                     def fun(*rv_pa_list):
                         return lookup_table[tuple(rv_pa_list)]
-                    print("lllkk", nd.name, fun(*([0]*num_parents)))
+                    # print("lllkk", nd.name, fun(*([0]*num_parents)))
 
                     rv_pa_list = [nd_to_rv[nd1] for nd1 in nd_pa_list]
                     nd_to_rv[nd] = pm.Categorical(nd.name, fun(*rv_pa_list))
@@ -174,11 +178,15 @@ class Bounder_MC:
         with self.pm_model:
             trace = pm.sample_prior_predictive(self.num_1world_samples)
 
-            PN = trace['Y0'][trace['X'] == 1 & trace['Y'] == 1].mean()[0]
-            PS = trace['Y1'][trace['X'] == 0 & trace['Y'] == 0].mean()[1]
+            prob_Y0_is_1 =\
+                trace['Y0'][(trace['X'] == 1) & (trace['Y'] == 1)].mean()
+            PN = 1 -prob_Y0_is_1
+            prob_Y1_is_1 = \
+                trace['Y1'][(trace['X'] == 0) & (trace['Y'] == 0)].mean()
+            PS = prob_Y1_is_1
 
-            prob_Y0_is_0 = trace['Y0'].mean()[0]
-            prob_Y1_is_1_if_Y0_is_0 = trace['Y1'][trace['Y0'] == 0].mean()[1]
+            prob_Y0_is_0 = 1 - trace['Y0'].mean()
+            prob_Y1_is_1_if_Y0_is_0 = trace['Y1'][(trace['Y0'] == 0)].mean()
             PNS = prob_Y1_is_1_if_Y0_is_0 * prob_Y0_is_0
 
             return PNS, PN, PS
@@ -199,7 +207,8 @@ class Bounder_MC:
         trol_coords_to_PNS3 = {}
         for trol_coords in itertools.product(*trol_range_list):
             PNS, PN, PS = self.estimate_PNS3_for_trol_coords(trol_coords)
-            print("xxccd, trol_coords, PNS, PN, PS", trol_coords, PNS, PN, PS)
+            # print("xxccd, trol_coords, PNS, PN, PS", trol_coords, PNS, PN,
+            # PS)
             trol_coords_to_PNS3[trol_coords] = np.array([PNS, PN, PS])
 
         return trol_coords_to_PNS3
@@ -232,24 +241,28 @@ class Bounder_MC:
             self.imagined_bnet.refresh_random_nodes()
             trol_coords_to_PNS3 = self.estimate_PNS3_for_all_trol_coords()
             for trol_coords, PNS3 in trol_coords_to_PNS3.items():
-                PNS3_bds = self.trol_coords_to_PNS3_bds[trol_coords]
+                PNS3_bounds = self.trol_coords_to_PNS3_bds[trol_coords]
                 for k in range(3):
-                    low, high = PNS3_bds[k]
-                    if PNS3[k] < low:
-                        PNS3_bds[k][0] = PNS3[k]
+                    low, high = PNS3_bounds[k]
+                    if PNS3[k] <= low:
+                        PNS3_bounds[k][0] = PNS3[k]
                     if PNS3[k] > high:
-                        PNS3_bds[k][1] = PNS3[k]
-
+                        PNS3_bounds[k][1] = PNS3[k]
+                    # print("kkhhh", f"k={k}, low={low}, high={high}, "
+                    #                f"PNS[k]={PNS3[k]}, "
+                    #                f"new low={PNS3_bounds[k][0]},"
+                    #                f"new high={PNS3_bounds[k][1]}")
 
 if __name__ == "__main__":
     def main1():
         imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet()
         # print("kkkll", imagined_bnet.nodes)
         bder = Bounder_MC(imagined_bnet,
-                          num_1world_samples=100,
-                          num_worlds=1)
+                          num_1world_samples=1000,
+                          num_worlds=20)
         bder.set_PNS3_bds()
-        print(bder.get_PNS3_bds())
+        print("control nodes:", [nd.name for nd in bder.trol_list])
+        pprint(bder.get_PNS3_bds())
 
     def main2():
         lookup_table = theano.shared(np.asarray([
@@ -265,4 +278,4 @@ if __name__ == "__main__":
             return lookup_table[p1, p2]
         print("fun2", fun2(1,0))
 
-    main2()
+    main1()
