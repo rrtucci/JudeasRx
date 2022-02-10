@@ -55,14 +55,14 @@ class ImaginedBayesNet(BayesNet):
 
     Fixed nodes are assigned a pot by in_bnet, and it never changes.
 
-    Random nodes are assigned a random pot. Class Bounder_MC uses an
+    Random nodes are assigned a random pot. Class MultiBounder_MC uses an
     imagined bnet (i.e., an object of this class) and switches from one
     "world" to the next one by randomizing all the nodes in the random nodes
     list. Note Y0Y1 is treated as a random node.
 
     Control nodes have only one active state at a time; the active state has
     unit probablity, all other states of the node have zero probability.
-    Class Bounder_MC uses an imagined bnet (i.e., an object of this class)
+    Class MultiBounder_MC uses an imagined bnet (i.e., an object of this class)
     and samples all possible active states for all control nodes.
 
     The pot for node Y is assigned so that Y=(1-X)*Y0 + X*Y1, where X, Y,

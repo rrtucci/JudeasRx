@@ -22,7 +22,7 @@ np.set_printoptions(precision=3, floatmode="fixed")
 # ran into trouble installing jupyter lab in conda virtual env. This solved it
 # https://stackoverflow.com/questions/68261254/conda-error-sysconfigdata-x86-64-conda-linux-gnu
 
-class Bounder_MC:
+class MultiBounder_MC:
     """
     Note: This class uses code in directories: nodes, graphs, potentials,
     that was borrowed from my app Quantum Fog
@@ -32,8 +32,8 @@ class Bounder_MC:
     PyMC3 Discourse
     https://discourse.pymc.io/t/bayes-nets-belief-networks-and-pymc/5150
 
-    We call this class Bounder_MC= Bounder Monte Carlo, to distinguish it
-    from Bounder_ana= Bounder analytic.
+    We call this class MultiBounder_MC= MultiBounder Monte Carlo,
+    to distinguish it from MultiBounder_ana= MultiBounder analytic.
 
     Theano is complementary to our Quantum Fog classes. They both use DAGs
     and potentials, but QFog uses Bayesian networks whereas Theano uses
@@ -286,7 +286,7 @@ if __name__ == "__main__":
         imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet(
             draw=False, use_Y0Y1=True, only_obs=False)
         # print("kkkll", imagined_bnet.nodes)
-        bder = Bounder_MC(imagined_bnet,
+        bder = MultiBounder_MC(imagined_bnet,
                           num_1world_samples=1000,
                           num_worlds=5)
         bder.set_PNS3_bds()

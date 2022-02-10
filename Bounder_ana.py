@@ -5,7 +5,7 @@ np.set_printoptions(precision=3, floatmode="fixed")
 class Bounder_ana:
     """
     We call this class Bounder_ana= Bounder analytic, to distinguish it from
-    Bounder_MC= Bounder Monte Carlo.
+    MultiBounder_MC= Bounder Monte Carlo.
 
     The theory and notation in this class is explained in the 2 chapters
     entitled "Personalized Treatment Effects" and "Personalized Expected

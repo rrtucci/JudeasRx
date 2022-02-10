@@ -194,7 +194,7 @@ class Plotter_nz:
     @staticmethod
     def plot_both_ATE(bdoorATE, ATE=None):
         """
-        This method is called by class Comparer. It draws a scatter plot of
+        This method is called by class Cprob_. It draws a scatter plot of
         (bdoorATE_z, z) for all z and (ATE_z, z) for all z. It also plots
         vertical lies at the expected bdoorATE and expected ATE.
 

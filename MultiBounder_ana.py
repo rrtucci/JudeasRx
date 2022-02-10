@@ -7,7 +7,7 @@ from Plotter_nz import Plotter_nz
 np.set_printoptions(precision=3, floatmode="fixed")
 
 
-class Comparer:
+class MultiBounder_ana:
     """
     This class takes as input the probabilities for o1b0=O_{1|0,z}, o1b1=O_{
     1|1, z}, px1= P(x=1|z), e1b0=E_{1|0,z}, e1b1=E_{1|1,z}, pz=P(z) for each
@@ -180,7 +180,7 @@ class Comparer:
 
         Returns
         -------
-        Comparer
+        MultiBounder_ana
 
         """
         df = pd.read_csv(path)
@@ -198,7 +198,7 @@ class Comparer:
             row = list(df.iloc[k])[1:]
             # print(k, zname, row)
             zname_to_input_probs[zname] = row
-        return Comparer(zname_to_input_probs, **kwargs)
+        return MultiBounder_ana(zname_to_input_probs, **kwargs)
 
     def get_ATE(self):
         """
@@ -313,11 +313,11 @@ if __name__ == "__main__":
         zname_to_input_probs['b'] = [.37, .62, .71, .5, .5, .3]
         zname_to_input_probs['c'] = [.2, .5, .7, .1, .6, .5]
         alp_y0_y1 = np.array([[.5, -.4], [.2, .1]])
-        cer = Comparer(zname_to_input_probs,
+        mba = MultiBounder_ana(zname_to_input_probs,
                        alp_y0_y1=alp_y0_y1,
                        only_obs=False)
-        cer.plot_bds()
-        cer.plot_both_ATE()
+        mba.plot_bds()
+        mba.plot_both_ATE()
     main()
 
 
