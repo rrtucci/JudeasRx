@@ -50,7 +50,8 @@ Jupyter notebook with an example with 3 strata is provided.
       
 ## Extension to Monte Carlo evaluation of bounds for a specific DAG
 
-So we have described only how JudeasRx can calculate *analytically* bounds for 
+So far, we have described only how JudeasRx can calculate *analytically* 
+bounds for 
 PNS, PN and PS, for very broad classes of DAGs (directed acyclc graphs), 
 for an arbitrary number of strata.
 If 
