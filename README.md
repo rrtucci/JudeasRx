@@ -1,4 +1,5 @@
 # JudeasRx
+![humorous](images/whale-eating-goldfish-judeasrx.jpg)
 
 ![JudeasRx screenshot](images/JudeasRx-screenshot.jpg)
 
