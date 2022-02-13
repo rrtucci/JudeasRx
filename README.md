@@ -58,7 +58,7 @@ for an arbitrary number of strata.
 If 
 one assumes a specific DAG, those bounds can be made tighter. JudeasRx can 
 also calculate *stochastically* 
-bounds for PNS, PN and PS, for a specfic DAG, for an arbitrary number of 
+bounds for PNS, PN and PS, for a specific DAG, for an arbitrary number of 
 strata.
 It does this using the very 
 mature Python library 
