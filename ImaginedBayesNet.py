@@ -10,12 +10,12 @@ class ImaginedBayesNet(BayesNet):
     https://github.com/artiste-qb-net/quantum-fog
 
     This class takes as input a BayesNet object called 'in_bnet' with nodes
-    X, Y and an arrow X->Y.  This class modifies in_bnet. The new bnet is
+    X, Y and an arrow X->Y, and then it modifies in_bnet. The new bnet is
     assigned to self of this class and is called an "imagined bnet".
 
     Let trols_list be a list of control nodes. trol nodes should be selected
     judiciously from the set of all nodes of in_bnet. See Judea Pearl's
-    advice on godd and bad controls:
+    advice on good and bad controls:
     https://ftp.cs.ucla.edu/pub/stat_ser/r493.pdf
 
     As usual, we will assume 2 cases: only observational data (
@@ -26,7 +26,7 @@ class ImaginedBayesNet(BayesNet):
     This class modifies the in_bnet structure as follows:
 
     1. it adds two new nodes Y0 and Y1 and a selection bias node Y0Y1. Y0Y1
-    is given parents Y0, Y1 and no children. It's purpose is to introduce an
+    is given parents Y0, Y1 and no children. Its purpose is to introduce an
     "explaining away" correlation between nodes Y0 and Y1.
 
     2. it removes all parents of nodes X and Y and makes trols_list the new
@@ -38,18 +38,18 @@ class ImaginedBayesNet(BayesNet):
     observational data (self.only_obs=True), it makes trol_list the parents
     of both Y0 and Y1. Hence, X is a parent of both Y0 and Y1 iff
     self.only_obs=True. Why these 2 cases are treated differently: if there
-    is both observational and experimental data, there is twice as much data
-    to fit into the TPMs (transition probability matrices) of nodes Y0 and
-    Y1, so Y0 and Y1 need an extra parent to enlarge the TPM so that it can
-    fit twice as much data. Regardless of the value of self.only_obs,
-    this class makes(Y, Y0Y1) the children of both Y0 and Y1.
+    is both observational and data, there is twice as much data to fit into
+    the TPMs (transition probability matrices) of nodes Y0 and Y1, so Y0 and
+    Y1 need an extra parent to enlarge the TPM so that it can fit twice as
+    much data. Regardless of the value of self.only_obs, this class makes (
+    Y, Y0Y1) the children of both Y0 and Y1.
 
     This class assigns a TPM (transition probability matrix) to each node of
     the imagined bnet as follows:
 
     The TPM of each node is stored in an object of class Potential. ALL
-    nodes of the following DISJOINT types, depending on how their pot is
-    assigned:
+    nodes belong to the following DISJOINT sets, depending on how their pot
+    is assigned:
 
     fixed nodes, random nodes, control nodes, Y, X, Y0, Y1
 
@@ -58,12 +58,12 @@ class ImaginedBayesNet(BayesNet):
     Random nodes are assigned a random pot. Class MultiBounder_MC uses an
     imagined bnet (i.e., an object of this class) and switches from one
     "world" to the next one by randomizing all the nodes in the random nodes
-    list. Note Y0Y1 is treated as a random node.
+    list. Note that Y0Y1 is treated as a random node.
 
     Control nodes have only one active state at a time; the active state has
     unit probablity, all other states of the node have zero probability.
-    Class MultiBounder_MC uses an imagined bnet (i.e., an object of this class)
-    and samples all possible active states for all control nodes.
+    Class MultiBounder_MC uses an imagined bnet (i.e., an object of this
+    class) and loops over all possible active states for all control nodes.
 
     The pot for node Y is assigned so that Y=(1-X)*Y0 + X*Y1, where X, Y,
     Y0 and Y1 \in {0,1}.
@@ -72,8 +72,8 @@ class ImaginedBayesNet(BayesNet):
     dictionary trol_coords_to_oe_data which maps trol_coords to oe_data.
     trol_coords is a tuple of states for the control nodes. oe_data is a
     list of five probabilities oe_data=[o1b0, o1b1, px1, e1b0, e1b1],
-    where o1b0=O_{1|0}, o1b1=O_{1|1}, px1=P(x=1)=E_{1|0}, e1b1=E_{1|1}.
-    This notation for probabities is explained in the chapter on
+    where o1b0=O_{1|0}, o1b1=O_{1|1}, px1=P(x=1), e1b0=E_{1|0}, e1b1=E_{
+    1|1}. This notation for probabities is explained in the chapter on
     "Personalized Treatment Effects" of my book Bayesuvius.
 
     Attributes
