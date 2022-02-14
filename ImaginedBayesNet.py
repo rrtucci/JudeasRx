@@ -60,10 +60,11 @@ class ImaginedBayesNet(BayesNet):
     "world" to the next one by randomizing all the nodes in the random nodes
     list. Note that Y0Y1 is treated as a random node.
 
-    Control nodes have only one active state at a time; the active state has
-    unit probablity, all other states of the node have zero probability.
+    Each control node has only one active state at a time. The active state
+    has unit probablity, all other states of the node have zero probability.
     Class MultiBounder_MC uses an imagined bnet (i.e., an object of this
-    class) and loops over all possible active states for all control nodes.
+    class) and loops over all possible trol_coords (i.e., control
+    coordinates, tuples of active states for the control nodes).
 
     The pot for node Y is assigned so that Y=(1-X)*Y0 + X*Y1, where X, Y,
     Y0 and Y1 \in {0,1}.
@@ -320,8 +321,8 @@ class ImaginedBayesNet(BayesNet):
     @staticmethod
     def build_test_imagined_bnet(draw=False, use_Y0Y1=True, only_obs=False):
         """
-        This method builds an imagined bnet from a simple example of an
-        input bnet.
+        This method builds an imagined bnet for testing purposes from a
+        simple example of an input bnet.
 
         Parameters
         ----------
@@ -332,6 +333,7 @@ class ImaginedBayesNet(BayesNet):
 
         Returns
         -------
+        ImaginedBayesNet
 
         """
         cl = BayesNode(0, name="Cloudy")
