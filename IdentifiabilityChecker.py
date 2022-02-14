@@ -135,7 +135,6 @@ class IdentifiabilityChecker:
                     query_bounds[0] = query
                 if query > high:
                     query_bounds[1] = query
-1
 
 if __name__ == "__main__":
     def main():
