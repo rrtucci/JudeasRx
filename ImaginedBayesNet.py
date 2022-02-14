@@ -125,6 +125,8 @@ class ImaginedBayesNet(BayesNet):
         self.nd_Y = self.get_node_named("Y")
         assert self.nd_X.has_child(self.nd_Y), \
             "node X must have node Y as child"
+        assert self.nd_X.size == 2 and self.size == 2,\
+            "Both X and Y must have 2 states only."
 
         # these nodes will be created by build_self()
         self.nd_Y0 = None
