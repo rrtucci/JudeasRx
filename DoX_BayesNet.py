@@ -51,7 +51,6 @@ class DoX_BayesNet(BayesNet):
     ----------
     nd_X : BayesNode
     nd_Y : BayesNode
-    trol_coords : tuple[int]
     trol_list : list[BayesNode]
         list of control nodes
     unobs_nd_list : list[BayesNode]
@@ -63,8 +62,7 @@ class DoX_BayesNet(BayesNet):
                  in_bnet,
                  unobs_nd_list,
                  trol_list,
-                 x_val,
-                 trol_coords):
+                 x_val):
         """
         Constructor.
 
@@ -81,9 +79,9 @@ class DoX_BayesNet(BayesNet):
         self.nd_Y = self.get_node_named("Y")
         assert self.nd_X.has_child(self.nd_Y), \
             "node X must have node Y as child"
-        # Allow nodes X and Y to be of any size
-        # assert self.nd_X.size == 2 and self.size == 2, \
-        #     "Both X and Y must have 2 states only."
+        # For simplicity, assume size of node Y is 2, node X of any size
+        assert self.nd_Y.size == 2, \
+            "Node Y must have 2 states only."
 
         self.unobs_nd_list = unobs_nd_list
         self.trol_list = trol_list
@@ -99,16 +97,8 @@ class DoX_BayesNet(BayesNet):
                 "nodes X and Y cannot be control nodes"
 
         self.x_val = x_val
-        self.trol_coords = trol_coords
         assert self.x_val in list(range(self.nd_X.size)),\
             "x_val is not an integer between 0 and size-1 of node X"
-        assert len(self.trol_coords) == len(self.trol_list),\
-            "list of control coordinates and control axes must have same " \
-            "length"
-        for k, state in enumerate(self.trol_coords):
-            assert state in range(self.trol_list[k].size),\
-                f"{state} is out of range for set of states of" \
-                f" control node {self.trol_list[k].name}"
         self.build_self()
 
     def build_self(self):
@@ -129,18 +119,6 @@ class DoX_BayesNet(BayesNet):
         pot_arr[self.x_val] = 1.0
         self.nd_X.potential = DiscreteUniPot(False, self.nd_X,
                                              pot_arr=pot_arr)
-        for k, nd in enumerate(self.trol_list):
-            num_parents = len(nd.parents)
-            active_state = self.trol_coords[k]
-            pot_arr = np.zeros(shape=nd.potential.pot_arr.shape)
-            # slicex = tuple([slice(None), slice(None), ...,
-            # slice(None), active_state])
-            slicex = tuple([slice(None)] * num_parents +
-                           [active_state])
-            # print('aaasss', num_parents, active_state, slicex)
-            pot_arr[slicex] = 1.0
-            nd.potential = DiscreteCondPot(False, nd.potential.ord_nodes,
-                                           pot_arr=pot_arr)
 
     def refresh_unobs_nodes(self):
         """
@@ -200,8 +178,7 @@ class DoX_BayesNet(BayesNet):
         doX_bnet = DoX_BayesNet(in_bnet,
                                 unobs_nd_list,
                                 trol_list,
-                                x_val=0,
-                                trol_coords=(0,))
+                                x_val=0)
         if draw:
             doX_bnet.draw(algo_num=1)
             path1 = './tempo.dot'
