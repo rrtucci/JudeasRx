@@ -1,5 +1,6 @@
 from DoX_BayesNet import *
 from PyMC3_model_builder import *
+from utils_JudeasRx import next_mu_sigma
 
 import numpy as np
 import itertools
@@ -36,6 +37,9 @@ class IdentifiabilityChecker:
     trol_coords_to_query_bds : dict[tuple[int], np.array]
         np.array of is [low Q, high Q]. dictionary mapping control
         coordinates to Q bounds
+    trol_coords_to_query_stats : dict[tuple[int], np.array]
+        np.array of is [mean of Q, sigma of Q (i.e., standard deviation)].
+        dictionary mapping control coordinates to Q statistics       
     trol_list : list[BayesNode]
         list of control nodes
     """
@@ -56,11 +60,13 @@ class IdentifiabilityChecker:
         self.pm_model_builder = PyMC3_model_builder(doX_bnet)
 
         self.trol_coords_to_query_bds = {}
+        self.trol_coords_to_query_stats = {}
         trol_range_list = [range(nd.size) for nd in
                            self.doX_bnet.trol_list]
 
         for trol_coords in itertools.product(*trol_range_list):
             self.trol_coords_to_query_bds[trol_coords] = np.array([1., 0])
+            self.trol_coords_to_query_stats[trol_coords] = np.array([0.0, 0])
         self.trol_list = self.doX_bnet.trol_list
 
     def estimate_query_for_these_trol_coords(self, trol_coords):
@@ -115,9 +121,23 @@ class IdentifiabilityChecker:
         """
         return self.trol_coords_to_query_bds
 
-    def set_query_bds(self):
+    def get_query_stats(self):
         """
-        Sets class attribute trol_coords_to_query_bds.
+        Gets class attribute trol_coords_to_query_stats.
+
+        Returns
+        -------
+        dict[tuple, np.array]
+            np.array is [mean of Q, sigma of Q (i.e., stadard deviation)]
+
+        """
+        return self.trol_coords_to_query_stats
+
+
+    def set_query_bds_and_stats(self):
+        """
+        Sets class attributes trol_coords_to_query_bds and
+        trol_coords_to_query_stats.
 
         Returns
         -------
@@ -135,6 +155,12 @@ class IdentifiabilityChecker:
                     query_bounds[0] = query
                 if query > high:
                     query_bounds[1] = query
+                stats = self.trol_coords_to_query_stats[trol_coords]
+                next_mu, next_sigma = next_mu_sigma(world, query,
+                                                    stats[0], stats[1])
+                stats[0] = next_mu
+                stats[1] = next_sigma
+
 
 if __name__ == "__main__":
     def main():
@@ -143,7 +169,7 @@ if __name__ == "__main__":
         checker = IdentifiabilityChecker(doX_bnet,
                           num_1world_samples=100,
                           num_worlds=5)
-        checker.set_query_bds()
+        checker.set_query_bds_and_stats_and_stats()
         print("control nodes:",
               [nd.name for nd in checker.trol_list])
         pprint(checker.get_query_bds())
