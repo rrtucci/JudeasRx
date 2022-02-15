@@ -60,8 +60,8 @@ class DoX_BayesNet(BayesNet):
     """
     def __init__(self,
                  in_bnet,
-                 unobs_nd_list,
                  trol_list,
+                 unobs_nd_list,
                  x_val):
         """
         Constructor.
@@ -69,8 +69,8 @@ class DoX_BayesNet(BayesNet):
         Parameters
         ----------
         in_bnet : BayesNet
-        unobs_nd_list : list[BayesNode]
         trol_list : list[BayesNode]
+        unobs_nd_list : list[BayesNode]
         x_val : int
         trol_coords : tuple(int)
         """
@@ -83,23 +83,41 @@ class DoX_BayesNet(BayesNet):
         assert self.nd_Y.size == 2, \
             "Node Y must have 2 states only."
 
+        self.trol_list = None
+        self.unobs_nd_list = None
+        self.set_trol_and_unobs_nodes(trol_list, unobs_nd_list)
+
+        self.x_val = x_val
+        assert self.x_val in list(range(self.nd_X.size)),\
+            "x_val is not an integer between 0 and size-1 of node X"
+        self.build_self()
+
+    def set_trol_and_unobs_nodes(self, trol_list, unobs_nd_list):
+        """
+        Sets self.trol_list and  self.unobs_nd_list in a safe way.
+
+        Parameters
+        ----------
+        trol_list : list[BayesNode]
+        unobs_nd_list : list[BayesNode]
+
+        Returns
+        -------
+        None
+
+        """
         self.unobs_nd_list = unobs_nd_list
         self.trol_list = trol_list
         assert set(trol_list).isdisjoint(set(unobs_nd_list)), \
             "the sets of unobserved nodes and control nodes must be disjoint"
 
         assert self.nd_X not in self.unobs_nd_list \
-                and self.nd_Y not in self.unobs_nd_list, \
-                "nodes X and Y cannot be unobserved nodes"
+               and self.nd_Y not in self.unobs_nd_list, \
+            "nodes X and Y cannot be unobserved nodes"
 
         assert self.nd_X not in self.trol_list \
-                and self.nd_Y not in self.trol_list, \
-                "nodes X and Y cannot be control nodes"
-
-        self.x_val = x_val
-        assert self.x_val in list(range(self.nd_X.size)),\
-            "x_val is not an integer between 0 and size-1 of node X"
-        self.build_self()
+               and self.nd_Y not in self.trol_list, \
+            "nodes X and Y cannot be control nodes"
 
     def build_self(self):
         """
@@ -173,12 +191,13 @@ class DoX_BayesNet(BayesNet):
         if draw:
             in_bnet.draw(algo_num=1)
 
-        unobs_nd_list = [nd_U]
         trol_list = [nd_Z]
+        unobs_nd_list = [nd_U]
+        x_val=0
         doX_bnet = DoX_BayesNet(in_bnet,
-                                unobs_nd_list,
                                 trol_list,
-                                x_val=0)
+                                unobs_nd_list,
+                                x_val)
         if draw:
             doX_bnet.draw(algo_num=1)
             path1 = './tempo.dot'
