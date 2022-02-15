@@ -77,8 +77,11 @@ class DoX_BayesNet(BayesNet):
         BayesNet.__init__(self, in_bnet.nodes)
         self.nd_X = self.get_node_named("X")
         self.nd_Y = self.get_node_named("Y")
-        assert self.nd_X.has_child(self.nd_Y), \
-            "node X must have node Y as child"
+
+        # # will relax this
+        # assert self.nd_X.has_child(self.nd_Y), \
+        #     "node X must have node Y as child"
+
         # For simplicity, assume size of node Y is 2, node X of any size
         assert self.nd_Y.size == 2, \
             "Node Y must have 2 states only."

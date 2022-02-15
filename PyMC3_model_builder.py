@@ -67,7 +67,8 @@ class PyMC3_model_builder:
         for nd in self.controlled_bnet.nodes:
             self.topo_index_to_nd[nd.topo_index] = nd
 
-        # num_nds = len(self.controlled_bnet.nodes)
+        num_nds = len(self.controlled_bnet.nodes)
+
         # for ind in range(num_nds):
         #     nd = self.topo_index_to_nd[ind]
         #     print("mmmkk", ind, nd.name,
@@ -107,8 +108,10 @@ class PyMC3_model_builder:
             num_nds = len(self.controlled_bnet.nodes)
             for topo_index in range(num_nds):
                 nd = self.topo_index_to_nd[topo_index]
-                # print("llhhhf", topo_index, nd.name)
                 nd_pa_list = nd.potential.ord_nodes[:-1]
+                # print("llhhhf", topo_index, nd.name, [x.name for x
+                #                                       in nd_pa_list])
+
                 num_parents = len(nd_pa_list)
 
                 if nd in self.trol_list:
@@ -135,6 +138,8 @@ class PyMC3_model_builder:
                         return lookup_table[tuple(rv_pa_list)]
                     # print("lllkk", nd.name, fun(*([0]*num_parents)))
 
+                    # print("jjjhhg", nd_to_rv, nd_pa_list)
+                    # print("aaahhg", [nd.name for nd in nd_pa_list])
                     rv_pa_list = [nd_to_rv[nd1] for nd1 in nd_pa_list]
                     nd_to_rv[nd] = pm.Categorical(nd.name, fun(*rv_pa_list))
 
