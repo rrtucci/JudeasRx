@@ -144,8 +144,12 @@ class IdentifiabilityChecker:
         None
 
         """
+        print("world:")
         for world in range(self.num_worlds):
-            print("world", world)
+            if (world+1) % 10 == 0 or world == self.num_worlds-1:
+                print(world, end="\n")
+            else:
+                print(world, end=", ")
             self.doX_bnet.refresh_unobs_nodes()
             trol_coords_to_query = self.estimate_query_for_all_trol_coords()
             for trol_coords, query in trol_coords_to_query.items():
@@ -169,9 +173,13 @@ if __name__ == "__main__":
         checker = IdentifiabilityChecker(doX_bnet,
                           num_1world_samples=100,
                           num_worlds=5)
-        checker.set_query_bds_and_stats_and_stats()
+        checker.set_query_bds_and_stats()
         print("control nodes:",
               [nd.name for nd in checker.trol_list])
+        print("control coords to query bounds:")
         pprint(checker.get_query_bds())
+        print("control coords to query stats:")
+        pprint(checker.get_query_stats())
+
 
     main()
