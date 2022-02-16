@@ -1,5 +1,6 @@
 from ImaginedBayesNet import *
 from PyMC3_model_builder import *
+from utils_JudeasRx import next_mu_sigma
 
 import numpy as np
 import itertools
@@ -37,8 +38,14 @@ class MultiBounder_MC:
         TPMs of the random nodes.
     pm_model_builder : PyMC3_model_builder
     trol_coords_to_PNS3_bds : dict[tuple[int], np.array]
-        np.array of shape=(3, 2). dictionary mapping control coordinates to
-        PNS3 bounds
+        dictionary mapping control coordinates to PNS3 bounds.
+        np.array is [[low PNS, high PNS],[low PN, high PN],[low PS, high PS]].
+        array shape is (3, 2).
+    trol_coords_to_PNS3_stats : dict[tuple[int], np.array]
+        dictionary mapping control coordinates to PNS3 bounds.
+        np.array is [[mu of PNS, sigma of PNS],[mu of PN, sigma of PN],
+        [mu of PS, sigma of PS]]. mu=mean, sigma=standard deviation. array
+        shape is (3, 2).
     trol_list : list[BayesNode]
         list of control nodes
     """
@@ -59,6 +66,7 @@ class MultiBounder_MC:
         self.pm_model_builder = PyMC3_model_builder(imagined_bnet)
 
         self.trol_coords_to_PNS3_bds = {}
+        self.trol_coords_to_PNS3_stats = {}
         trol_range_list = [range(nd.size) for nd in
                            self.imagined_bnet.trol_list]
 
@@ -66,6 +74,9 @@ class MultiBounder_MC:
             self.trol_coords_to_PNS3_bds[trol_coords] = np.array([[1., 0],
                                                                   [1., 0],
                                                                   [1., 0]])
+            self.trol_coords_to_PNS3_stats[trol_coords] = np.array([[0., 0],
+                                                                  [0., 0],
+                                                                  [0., 0]])
         self.trol_list  = self.imagined_bnet.trol_list
 
     def estimate_PNS3_for_these_trol_coords(self, trol_coords):
@@ -139,32 +150,69 @@ class MultiBounder_MC:
         """
         return self.trol_coords_to_PNS3_bds
 
-    def set_PNS3_bds(self):
+    def get_PNS3_bds(self):
         """
-        Sets class attribute trol_coords_to_PNS3_bds, where PNS3=(PNS, PN,
+        Gets class attribute trol_coords_to_PNS3_bds, where PNS3=(PNS, PN,
         PS).
+
+        Returns
+        -------
+        dict[tuple, np.array]
+            np.array shape=(3, 2)
+            [[low PNS, high PNS],
+            [low PN, high PN],
+            [low PS, high PS]]
+
+        """
+        return self.trol_coords_to_PNS3_bds
+
+    def get_PNS3_stats(self):
+        """
+        Gets class attribute trol_coords_to_PNS3_stats, where PNS3=(PNS, PN,
+        PS).
+
+        Returns
+        -------
+        dict[tuple, np.array]
+            np.array shape=(3, 2)
+            [[mu of PNS, sigma of PNS],
+            [mu of PN, sigma of PN],
+            [mu of PS low, sigma of PS]]
+
+        """
+        return self.trol_coords_to_PNS3_stats
+
+    def set_PNS3_bds_and_stats(self):
+        """
+        Sets class attributes trol_coords_to_PNS3_bds and
+        trol_coords_to_PNS3_stats, where PNS3=(PNS, PN, PS).
 
         Returns
         -------
         None
 
         """
+        print("world:")
         for world in range(self.num_worlds):
-            print("world", world)
+            if (world + 1) % 10 == 0 or world == self.num_worlds - 1:
+                print(world, end="\n")
+            else:
+                print(world, end=", ")
             self.imagined_bnet.refresh_random_nodes()
             trol_coords_to_PNS3 = self.estimate_PNS3_for_all_trol_coords()
             for trol_coords, PNS3 in trol_coords_to_PNS3.items():
-                PNS3_bounds = self.trol_coords_to_PNS3_bds[trol_coords]
+                PNS3_bds = self.trol_coords_to_PNS3_bds[trol_coords]
+                PNS3_stats = self.trol_coords_to_PNS3_stats[trol_coords]
                 for k in range(3):
-                    low, high = PNS3_bounds[k]
+                    low, high = PNS3_bds[k]
                     if PNS3[k] <= low:
-                        PNS3_bounds[k][0] = PNS3[k]
+                        PNS3_bds[k][0] = PNS3[k]
                     if PNS3[k] > high:
-                        PNS3_bounds[k][1] = PNS3[k]
-                    # print("kkhhh", f"k={k}, low={low}, high={high}, "
-                    #                f"PNS[k]={PNS3[k]}, "
-                    #                f"new low={PNS3_bounds[k][0]},"
-                    #                f"new high={PNS3_bounds[k][1]}")
+                        PNS3_bds[k][1] = PNS3[k]
+                    next_mu, next_sigma = next_mu_sigma(world, PNS3[k],
+                            PNS3_stats[k][0], PNS3_stats[k][1])
+                    PNS3_stats[k][0] = next_mu
+                    PNS3_stats[k][1] = next_sigma
 
 
 if __name__ == "__main__":
@@ -175,9 +223,17 @@ if __name__ == "__main__":
         bder = MultiBounder_MC(imagined_bnet,
                           num_1world_samples=100,
                           num_worlds=5)
-        bder.set_PNS3_bds()
+        bder.set_PNS3_bds_and_stats()
         print("control nodes:",
               [nd.name for nd in bder.trol_list])
+        print("control coords to PNS3 bounds,")
+        print(
+            "[[low PNS, high PNS],\n [low PN, high PN],\n [low PS, high PS]]:")
         pprint(bder.get_PNS3_bds())
+        print("control coords to PNS3 statistics,")
+        print(
+            "[[mu PNS, sigma PNS],\n [mu PN, sigma PN],\n [mu PS, sigma PS]]:")
+        pprint(bder.get_PNS3_stats())
+
 
     main()

@@ -26,10 +26,11 @@ def next_mu_sigma(n, next_x, mu, sigma):
         \mu_{n+1}, \sigma_{n+1}
 
     """
-    next_mu = (n*mu + next_x)/(n+1)
-    next_delta_x_sq = (next_x-next_mu )**2
     if n > 0:
+        next_mu = (n * mu + next_x) / (n + 1)
+        next_delta_x_sq = (next_x - next_mu) ** 2
         next_sigma_sq = ((n-1)*(sigma**2) + next_delta_x_sq)/n
     else:
+        next_mu = next_x
         next_sigma_sq = 0.
     return next_mu, sqrt(next_sigma_sq)

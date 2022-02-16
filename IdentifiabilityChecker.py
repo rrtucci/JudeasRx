@@ -35,11 +35,12 @@ class IdentifiabilityChecker:
         TPMs of the unobserved nodes.
     pm_model_builder : PyMC3_model_builder
     trol_coords_to_query_bds : dict[tuple[int], np.array]
-        np.array of is [low Q, high Q]. dictionary mapping control
-        coordinates to Q bounds
+        dictionary mapping control coordinates to Q bounds.
+        np.array of is [low Q, high Q].
     trol_coords_to_query_stats : dict[tuple[int], np.array]
-        np.array of is [mean of Q, sigma of Q (i.e., standard deviation)].
-        dictionary mapping control coordinates to Q statistics       
+        dictionary mapping control coordinates to Q statistics
+        np.array of is [mean of Q, sigma of Q].
+        mu=mean, sigma=standard deviation.
     trol_list : list[BayesNode]
         list of control nodes
     """
@@ -153,17 +154,17 @@ class IdentifiabilityChecker:
             self.doX_bnet.refresh_unobs_nodes()
             trol_coords_to_query = self.estimate_query_for_all_trol_coords()
             for trol_coords, query in trol_coords_to_query.items():
-                query_bounds = self.trol_coords_to_query_bds[trol_coords]
-                low, high = query_bounds
+                q_bds = self.trol_coords_to_query_bds[trol_coords]
+                low, high = q_bds
                 if query <= low:
-                    query_bounds[0] = query
+                    q_bds[0] = query
                 if query > high:
-                    query_bounds[1] = query
-                stats = self.trol_coords_to_query_stats[trol_coords]
+                    q_bds[1] = query
+                q_stats = self.trol_coords_to_query_stats[trol_coords]
                 next_mu, next_sigma = next_mu_sigma(world, query,
-                                                    stats[0], stats[1])
-                stats[0] = next_mu
-                stats[1] = next_sigma
+                                                    q_stats[0], q_stats[1])
+                q_stats[0] = next_mu
+                q_stats[1] = next_sigma
 
 
 if __name__ == "__main__":
