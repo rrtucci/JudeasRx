@@ -126,7 +126,7 @@ class Plotter_nz:
 
     @staticmethod
     def plot_EU_bds(ax, zname_to_EU_bds, zname_to_EU_stats=None,
-                    horizontal=False):
+                    horizontal=False, positive=False):
         """
         This method plots a min-max bar for the bounds of EU for each
         stratum with name 'zname'. If zname_to_EU_stats is given, it plots
@@ -144,6 +144,8 @@ class Plotter_nz:
             but it replaces the low bound by the mean mu, and the high bound
             by the standard deviation sigma.
         horizontal : bool
+        positive : bool
+            True iff EU>=0
 
         Returns
         -------
@@ -154,19 +156,32 @@ class Plotter_nz:
         bar_width = .7/nz
         plt.sca(ax)
         if not horizontal:
-            plt.xticks([0], ["EU"])
-            ax.set_ylim(-1, 1)
-            y_labels = np.arange(-1, 1.1, .2)
+            if not positive:
+                plt.xticks([0], ["EU"])
+                ax.set_ylim(-1, 1)
+                y_labels = np.arange(-1, 1.1, .2)
+                ax.set_ylabel('utility')
+            else:
+                plt.xticks([0], ["query"])
+                ax.set_ylim(0, 1)
+                y_labels = np.arange(0, 1.1, .1)
+                ax.set_ylabel('probability')
             ax.set_yticks(y_labels)
             ax.grid(linestyle='--', axis='y')
-            ax.set_ylabel('utility')
         else:
-            plt.yticks([0], ["EU"])
-            ax.set_xlim(-1, 1)
-            x_labels = np.arange(-1, 1.1, .2)
+            if not positive:
+                plt.yticks([0], ["EU"])
+                ax.set_xlim(-1, 1)
+                x_labels = np.arange(-1, 1.1, .2)
+                ax.set_xlabel('utility')
+            else:
+                plt.yticks([0], ["query"])
+                ax.set_xlim(0, 1)
+                x_labels = np.arange(0, 1.1, .1)
+                ax.set_xlabel('probability')
             ax.set_xticks(x_labels)
             ax.grid(linestyle='--', axis='x')
-            ax.set_xlabel('utility')
+
         zindex = 0
         for zname, eu_bds in zname_to_EU_bds.items():
             zindex += 1
@@ -199,10 +214,11 @@ class Plotter_nz:
                                 xerr=eu_stats[1],
                                 fmt=".k",
                                 capsize=3)
-        if not horizontal:
-            ax.axhline(y=0, color='black')
-        else:
-            ax.axvline(x=0, color='black')
+            if not positive:
+                if not horizontal:
+                    ax.axhline(y=0, color='black')
+                else:
+                    ax.axvline(x=0, color='black')
 
     @staticmethod
     def plot_all_bds(zname_to_p3_bds,
@@ -282,6 +298,38 @@ class Plotter_nz:
 
         plt.show()
 
+    @staticmethod
+    def plot_query_bds(zname_to_query_bds, zname_to_query_stats=None,
+                    horizontal=False):
+        """
+        This method plots a min-max bar for the bounds of a query for each
+        stratum with name 'zname'. If zname_to_query_stats is given,
+        it plots error bars within those min-max bars. We define a query to
+        be a probability, so its value is between 0 and 1.
+
+        Parameters
+        ----------
+        zname_to_query_bds :  OrderedDict(str, np.array[shape=(2, )])
+            ordered dictionary mapping stratum named zname to its query bounds.
+        zname_to_query_stats :  OrderedDict(str, np.array[shape=(2, )])
+            ordered dictionary mapping stratum named zname to its query
+            statistics. The array has the same shape as in zname_to_query_bds,
+            but it replaces the low bound by the mean mu, and the high bound
+            by the standard deviation sigma.
+        horizontal : bool
+
+        Returns
+        -------
+        None
+
+        """
+        ax = plt.subplot()
+        Plotter_nz.plot_EU_bds(ax, zname_to_query_bds,
+                               zname_to_EU_stats=zname_to_query_stats,
+                               horizontal=horizontal,
+                               positive=True)
+        plt.show()
+
 
 if __name__ == "__main__":
 
@@ -346,7 +394,21 @@ if __name__ == "__main__":
 
         Plotter_nz.plot_both_ATE(ATE, bdoorATE)
 
+    def main4(horizontal):
+        zname_to_query_bds = OrderedDict()
+        zname_to_query_stats = OrderedDict()
+        zname_to_query_bds['m'] = np.array([0, .8])
+        zname_to_query_stats['m'] = np.array([.3, .2])
+
+        zname_to_query_bds['f'] = np.array([0, .5])
+        zname_to_query_stats['f'] = np.array([.3, .1])
+
+        Plotter_nz.plot_query_bds(zname_to_query_bds,
+                                zname_to_query_stats=zname_to_query_stats,
+                                horizontal=horizontal)
+
     main1(horizontal=True)
     main2(10, horizontal=True)
     main3()
+    main4(horizontal=False)
 
