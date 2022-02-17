@@ -17,9 +17,9 @@ class Plotter_2z:
     @staticmethod
     def plot_p3_bds(ax, p3_bds_m, p3_bds_f):
         """
-        This method plots 3 error bars for the bounds p3_bds_m of PNS3 = (PNS,
-        PN, PS) for male patients. Then it plots side-by-side 3
-        additional error bars for the bounds p3_bds_f for female patients.
+        This method plots 3 min-max bars for the bounds p3_bds_m of PNS3 = (
+        PNS, PN, PS) for male patients. Then it plots side-by-side 3
+        additional min-max bars for the bounds p3_bds_f for female patients.
 
         Parameters
         ----------
@@ -27,10 +27,10 @@ class Plotter_2z:
             an axis from matplotlib
         p3_bds_m : np.array
             [shape=(3, 2)]
-            the ouput of bounder_m.get_pns3_bds()
+            the ouput of bounder_m.get_PNS3_bds()
         p3_bds_f : np.array
             [shape=(3, 2)]
-            the output of bounder_f.get_pns3_bds()
+            the output of bounder_f.get_PNS3_bds()
 
         Returns
         -------
@@ -70,11 +70,11 @@ class Plotter_2z:
         ax.legend(['male', 'female'])
         
     @staticmethod
-    def plot_eu_bds(ax, eu_bds_m, eu_bds_f):
+    def plot_EU_bds(ax, eu_bds_m, eu_bds_f):
         """
-        This method plots an error bar for the bounds eu_bds_m for male
-        patients, and then it plots another error bar for the bounds eu_bds_f
-        for female patients.
+        This method plots a min-max bar for the bounds eu_bds_m for male
+        patients, and then it plots another min-max bar for the bounds
+        eu_bds_f for female patients.
 
         Parameters
         ----------
@@ -82,10 +82,10 @@ class Plotter_2z:
             an axis from matplotlib
         eu_bds_m : np.array
             [shape=(2,)]
-            the ouput of bounder_m.get_eu_bds()
+            the ouput of bounder_m.get_EU_bds()
         eu_bds_f : np.array
             [shape=(2,)]
-            the output of bounder_f.get_eu_bds()
+            the output of bounder_f.get_EU_bds()
 
 
         Returns
@@ -118,7 +118,7 @@ class Plotter_2z:
     @staticmethod
     def plot_all_bds(p3_bds_m, p3_bds_f, eu_bds_m, eu_bds_f):
         """
-        This method calls both plot_pns3_bds() and plot_eu_bds().
+        This method calls both plot_PNS3_bds() and plot_EU_bds().
 
         Parameters
         ----------
@@ -146,7 +146,7 @@ class Plotter_2z:
         ax1 = plt.subplot(gs[0])
         ax2 = plt.subplot(gs[1])
         Plotter_2z.plot_p3_bds(ax1, p3_bds_m, p3_bds_f)
-        Plotter_2z.plot_eu_bds(ax2, eu_bds_m, eu_bds_f)
+        Plotter_2z.plot_EU_bds(ax2, eu_bds_m, eu_bds_f)
         plt.tight_layout()
         plt.show()
 

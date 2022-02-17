@@ -37,17 +37,24 @@ class Plotter_nz:
         return size
 
     @staticmethod
-    def plot_p3_bds(ax, zname_to_p3_bds, horizontal=False):
+    def plot_p3_bds(ax, zname_to_p3_bds, zname_to_p3_stats=None,
+                    horizontal=False):
         """
-        This method plots 3 error bars for the bounds of PNS3 = (PNS,
-        PN, PS) for each stratum with name 'zname'.
+        This method plots 3 min-max bars for the bounds of PNS3 = (PNS, PN,
+        PS) for each stratum with name 'zname'. If zname_to_p3_stats is
+        given, it plots error bars within those min-max bars.
 
         Parameters
         ----------
         ax : Axes
             an axis from matplotlib
         zname_to_p3_bds :  OrderedDict(str, np.array[shape=(3, 2)])
-            ordered dictionary mapping stratum named zname its pns3 bounds.
+            ordered dictionary mapping stratum named zname to its pns3 bounds.
+        zname_to_p3_stats :  OrderedDict(str, np.array[shape=(3, 2)])
+            ordered dictionary mapping stratum named zname to its pns3
+            statistics. The array has the same shape as in zname_to_p3_bds,
+            but it replaces the low bound by the mean mu, and the high bound
+            by the standard deviation sigma.          
         horizontal : bool
 
         Returns
@@ -88,6 +95,13 @@ class Plotter_nz:
             if not horizontal:
                 ax.bar(bar_centers, p3_bds[:, 1]-p3_bds[:, 0],
                         width=bar_width, bottom=p3_bds[:, 0])
+                if zname_to_p3_stats is not None:
+                    p3_stats = zname_to_p3_stats[zname]
+                    ax.errorbar(bar_centers,
+                                p3_stats[:, 0],
+                                yerr=p3_stats[:, 1],
+                                fmt=".k",
+                                capsize=3)
                 for k in range(3):  # ax.text not vectorized
                     ax.text(bar_centers[k]-bar_width/5, p3_bds[k, 1]+.02,
                             texts[k],
@@ -99,22 +113,36 @@ class Plotter_nz:
                 for k in range(3):  # ax.text not vectorized
                     ax.text(p3_bds[k, 1], bar_centers[k] - bar_width / 4,
                             texts[k],
-                            size=Plotter_nz.text_size(bar_width,
-                                                      horizontal=True),
+                            size=Plotter_nz.text_size(
+                                bar_width, horizontal=True),
                             rotation=0)
+                    if zname_to_p3_stats is not None:
+                        p3_stats = zname_to_p3_stats[zname]
+                        ax.errorbar(p3_stats[:, 0],
+                                    bar_centers,
+                                    xerr=p3_stats[:, 1],
+                                    fmt=".k",
+                                    capsize=3)
 
     @staticmethod
-    def plot_eu_bds(ax, zname_to_eu_bds, horizontal=False):
+    def plot_EU_bds(ax, zname_to_EU_bds, zname_to_EU_stats=None,
+                    horizontal=False):
         """
-        This method plots an error bar for the bounds of EU for each stratum
-        with name 'zname'.
+        This method plots a min-max bar for the bounds of EU for each
+        stratum with name 'zname'. If zname_to_EU_stats is given, it plots
+        error bars within those min-max bars.
 
         Parameters
         ----------
         ax : Axes
             an axis from matplotlib
-        zname_to_eu_bds :  OrderedDict(str, np.array[shape=(2, )])
+        zname_to_EU_bds :  OrderedDict(str, np.array[shape=(2, )])
             ordered dictionary mapping stratum named zname to its EU bounds.
+        zname_to_EU_stats :  OrderedDict(str, np.array[shape=(2, )])
+            ordered dictionary mapping stratum named zname to its EU
+            statistics. The array has the same shape as in zname_to_EU_bds,
+            but it replaces the low bound by the mean mu, and the high bound
+            by the standard deviation sigma.
         horizontal : bool
 
         Returns
@@ -122,7 +150,7 @@ class Plotter_nz:
         None
 
         """
-        nz = len(zname_to_eu_bds)
+        nz = len(zname_to_EU_bds)
         bar_width = .7/nz
         plt.sca(ax)
         if not horizontal:
@@ -140,7 +168,7 @@ class Plotter_nz:
             ax.grid(linestyle='--', axis='x')
             ax.set_xlabel('utility')
         zindex = 0
-        for zname, eu_bds in zname_to_eu_bds.items():
+        for zname, eu_bds in zname_to_EU_bds.items():
             zindex += 1
             bar_center = (2*zindex - nz-1)*bar_width/2
             texto = '(%.2f, %.2f) %s' % (eu_bds[0], eu_bds[1], zname)
@@ -150,27 +178,47 @@ class Plotter_nz:
                 ax.text(bar_center-bar_width/5, eu_bds[1]+.02, texto,
                         size=Plotter_nz.text_size(bar_width),
                         rotation=90)
+                if zname_to_EU_stats is not None:
+                    eu_stats = zname_to_EU_stats[zname]
+                    ax.errorbar(bar_center,
+                                eu_stats[0],
+                                yerr=eu_stats[1],
+                                fmt=".k",
+                                capsize=3)
             else:
                 ax.barh(bar_center, eu_bds[1]-eu_bds[0],
                         height=bar_width, left=eu_bds[0])
                 ax.text(eu_bds[1], bar_center - bar_width/4,  texto,
-                        size=Plotter_nz.text_size(bar_width,
-                                                  horizontal=True),
+                        size=Plotter_nz.text_size(
+                            bar_width, horizontal=True),
                         rotation=0)
+                if zname_to_EU_stats is not None:
+                    eu_stats = zname_to_EU_stats[zname]
+                    ax.errorbar(eu_stats[0],
+                                bar_center,
+                                xerr=eu_stats[1],
+                                fmt=".k",
+                                capsize=3)
         if not horizontal:
             ax.axhline(y=0, color='black')
         else:
             ax.axvline(x=0, color='black')
 
     @staticmethod
-    def plot_all_bds(zname_to_p3_bds, zname_to_eu_bds, horizontal=False):
+    def plot_all_bds(zname_to_p3_bds,
+                     zname_to_EU_bds=None,
+                     zname_to_p3_stats=None,
+                     zname_to_EU_stats=None,
+                     horizontal=False):
         """
-        This method calls both plot_p3_bds() and plot_eu_bds().
+        This method calls both plot_p3_bds() and plot_EU_bds().
 
         Parameters
         ----------
         zname_to_p3_bds : OrderedDict(str, np.array[shape=(3, 2)])
-        zname_to_eu_bds : OrderedDict(str, np.array[shape=(2, )])
+        zname_to_EU_bds : OrderedDict(str, np.array[shape=(2, )])
+        zname_to_p3_stats : OrderedDict(str, np.array[shape=(3, 2)])
+        zname_to_EU_stats : OrderedDict(str, np.array[shape=(2, )])
         horizontal : bool
 
         Returns
@@ -186,8 +234,12 @@ class Plotter_nz:
 
         ax1 = plt.subplot(gs[0])
         ax2 = plt.subplot(gs[1])
-        Plotter_nz.plot_p3_bds(ax1, zname_to_p3_bds, horizontal=horizontal)
-        Plotter_nz.plot_eu_bds(ax2, zname_to_eu_bds, horizontal=horizontal)
+        Plotter_nz.plot_p3_bds(ax1, zname_to_p3_bds,
+                               zname_to_p3_stats=zname_to_p3_stats,
+                               horizontal=horizontal)
+        Plotter_nz.plot_EU_bds(ax2, zname_to_EU_bds,
+                               zname_to_EU_stats=zname_to_EU_stats,
+                               horizontal=horizontal)
         plt.tight_layout()
         plt.show()
 
@@ -233,25 +285,41 @@ class Plotter_nz:
 
 if __name__ == "__main__":
 
-    def main1():
+    def main1(horizontal):
         zname_to_p3_bds = OrderedDict()
+        zname_to_p3_stats = OrderedDict()
         zname_to_p3_bds['m'] = np.array([[.3, .3],
                                         [.2, .45],
                                         [.5, .68]])
+        zname_to_p3_stats['m'] = np.array([[.3, 0],
+                                        [.3, .05],
+                                        [.55, .02]])
+
         zname_to_p3_bds['f'] = np.array([[.35, .45],
                                         [.25, .55],
                                         [.55, .72]])
-        zname_to_eu_bds = OrderedDict()
-        zname_to_eu_bds['m'] = np.array([-.4, .8])
-        zname_to_eu_bds['f'] = np.array([0, .5])
+        zname_to_p3_stats['f'] = np.array([[.37, .01],
+                                        [.40, .1],
+                                        [.65, .03]])
+        zname_to_EU_bds = OrderedDict()
+        zname_to_EU_stats = OrderedDict()
+        zname_to_EU_bds['m'] = np.array([-.4, .8])
+        zname_to_EU_stats['m'] = np.array([.1, .2])
 
-        Plotter_nz.plot_all_bds(zname_to_p3_bds, zname_to_eu_bds)
+        zname_to_EU_bds['f'] = np.array([0, .5])
+        zname_to_EU_stats['f'] = np.array([.3, .1])
+
+        Plotter_nz.plot_all_bds(zname_to_p3_bds,
+                                zname_to_EU_bds=zname_to_EU_bds,
+                                zname_to_p3_stats=zname_to_p3_stats,
+                                zname_to_EU_stats=zname_to_EU_stats,
+                                horizontal=horizontal)
 
     import random
 
     def main2(nz, horizontal=False):
         zname_to_p3_bds = OrderedDict()
-        zname_to_eu_bds = OrderedDict()
+        zname_to_EU_bds = OrderedDict()
 
         def pair():
             a = random.uniform(0, 1)
@@ -262,8 +330,10 @@ if __name__ == "__main__":
 
         for zindex in range(nz):
             zname_to_p3_bds[str(zindex+1)] = np.array([pair(), pair(), pair()])
-            zname_to_eu_bds[str(zindex+1)] = np.array(pair())
-        Plotter_nz.plot_all_bds(zname_to_p3_bds, zname_to_eu_bds, horizontal)
+            zname_to_EU_bds[str(zindex+1)] = np.array(pair())
+        Plotter_nz.plot_all_bds(zname_to_p3_bds,
+                                zname_to_EU_bds=zname_to_EU_bds,
+                                horizontal=horizontal)
 
     def main3():
         ATE_dict = OrderedDict()
@@ -276,7 +346,7 @@ if __name__ == "__main__":
 
         Plotter_nz.plot_both_ATE(ATE, bdoorATE)
 
-
+    main1(horizontal=True)
     main2(10, horizontal=True)
     main3()
 

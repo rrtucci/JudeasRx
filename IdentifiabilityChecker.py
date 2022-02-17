@@ -5,6 +5,7 @@ from utils_JudeasRx import next_mu_sigma
 import numpy as np
 import itertools
 from pprint import pprint
+from collections import OrderedDict
 
 np.set_printoptions(precision=3, floatmode="fixed")
 
@@ -34,10 +35,10 @@ class IdentifiabilityChecker:
         number of worlds. Each world has a different random assignment to the
         TPMs of the unobserved nodes.
     pm_model_builder : PyMC3_model_builder
-    trol_coords_to_query_bds : dict[tuple[int], np.array]
+    trol_coords_to_query_bds : OrderedDict[tuple[int], np.array]
         dictionary mapping control coordinates to Q bounds.
         np.array of is [low Q, high Q].
-    trol_coords_to_query_stats : dict[tuple[int], np.array]
+    trol_coords_to_query_stats : OrderedDict[tuple[int], np.array]
         dictionary mapping control coordinates to Q statistics
         np.array of is [mean of Q, sigma of Q].
         mu=mean, sigma=standard deviation.
@@ -60,8 +61,8 @@ class IdentifiabilityChecker:
         self.num_worlds = num_worlds
         self.pm_model_builder = PyMC3_model_builder(doX_bnet)
 
-        self.trol_coords_to_query_bds = {}
-        self.trol_coords_to_query_stats = {}
+        self.trol_coords_to_query_bds = OrderedDict()
+        self.trol_coords_to_query_stats = OrderedDict()
         trol_range_list = [range(nd.size) for nd in
                            self.doX_bnet.trol_list]
 
@@ -116,7 +117,7 @@ class IdentifiabilityChecker:
 
         Returns
         -------
-        dict[tuple, np.array]
+        OrderedDict[tuple, np.array]
             np.array is [low Q, high Q]
 
         """
@@ -128,7 +129,7 @@ class IdentifiabilityChecker:
 
         Returns
         -------
-        dict[tuple, np.array]
+        OrderedDict[tuple, np.array]
             np.array is [mean of Q, sigma of Q (i.e., stadard deviation)]
 
         """
@@ -178,9 +179,9 @@ if __name__ == "__main__":
         print("control nodes:",
               [nd.name for nd in checker.trol_list])
         print("control coords to query bounds:")
-        pprint(checker.get_query_bds())
+        pprint(dict(checker.get_query_bds()))
         print("control coords to query stats:")
-        pprint(checker.get_query_stats())
+        pprint(dict(checker.get_query_stats()))
 
 
     main()

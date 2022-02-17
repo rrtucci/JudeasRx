@@ -5,6 +5,8 @@ from utils_JudeasRx import next_mu_sigma
 import numpy as np
 import itertools
 from pprint import pprint
+from collections import OrderedDict
+
 
 np.set_printoptions(precision=3, floatmode="fixed")
 
@@ -37,11 +39,11 @@ class MultiBounder_MC:
         number of worlds. Each world has a different random assignment to the
         TPMs of the random nodes.
     pm_model_builder : PyMC3_model_builder
-    trol_coords_to_PNS3_bds : dict[tuple[int], np.array]
+    trol_coords_to_PNS3_bds : OrderedDict[tuple[int], np.array]
         dictionary mapping control coordinates to PNS3 bounds.
         np.array is [[low PNS, high PNS],[low PN, high PN],[low PS, high PS]].
         array shape is (3, 2).
-    trol_coords_to_PNS3_stats : dict[tuple[int], np.array]
+    trol_coords_to_PNS3_stats : OrderedDict[tuple[int], np.array]
         dictionary mapping control coordinates to PNS3 bounds.
         np.array is [[mu of PNS, sigma of PNS],[mu of PN, sigma of PN],
         [mu of PS, sigma of PS]]. mu=mean, sigma=standard deviation. array
@@ -65,8 +67,8 @@ class MultiBounder_MC:
         self.num_worlds = num_worlds
         self.pm_model_builder = PyMC3_model_builder(imagined_bnet)
 
-        self.trol_coords_to_PNS3_bds = {}
-        self.trol_coords_to_PNS3_stats = {}
+        self.trol_coords_to_PNS3_bds = OrderedDict()
+        self.trol_coords_to_PNS3_stats = OrderedDict()
         trol_range_list = [range(nd.size) for nd in
                            self.imagined_bnet.trol_list]
 
@@ -141,7 +143,7 @@ class MultiBounder_MC:
 
         Returns
         -------
-        dict[tuple, np.array]
+        OrderedDict[tuple, np.array]
             np.array shape=(3, 2)
             [[PNS low, PNS high],
             [PN low, PN high],
@@ -173,7 +175,7 @@ class MultiBounder_MC:
 
         Returns
         -------
-        dict[tuple, np.array]
+        OrderedDict[tuple, np.array]
             np.array shape=(3, 2)
             [[mu of PNS, sigma of PNS],
             [mu of PN, sigma of PN],
@@ -229,11 +231,11 @@ if __name__ == "__main__":
         print("control coords to PNS3 bounds,")
         print(
             "[[low PNS, high PNS],\n [low PN, high PN],\n [low PS, high PS]]:")
-        pprint(bder.get_PNS3_bds())
+        pprint(dict(bder.get_PNS3_bds()))
         print("control coords to PNS3 statistics,")
         print(
             "[[mu PNS, sigma PNS],\n [mu PN, sigma PN],\n [mu PS, sigma PS]]:")
-        pprint(bder.get_PNS3_stats())
+        pprint(dict(bder.get_PNS3_stats()))
 
 
     main()

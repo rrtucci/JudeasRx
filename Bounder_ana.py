@@ -460,7 +460,7 @@ class Bounder_ana:
                 " or no experimental probs."
 
 
-    def get_pns3_bds(self):
+    def get_PNS3_bds(self):
         """
         Returns PNS3 bounds.
 
@@ -475,11 +475,11 @@ class Bounder_ana:
         """
         return self.pns3_bds
 
-    def set_pns3_bds_if_only_obs(self):
+    def set_PNS3_bds_if_only_obs(self):
         """
         This method sets the class attribute for the bounds for PNS3 = (PNS,
         PN, PS) iff self.only_obs==True. This method is used inside
-        set_pns3_bds(), which is more general.
+        set_PNS3_bds(), which is more general.
 
         Returns
         -------
@@ -567,7 +567,7 @@ class Bounder_ana:
         ps_bds = [ps_left, ps_right]
         self.pns3_bds = np.array([pns_bds, pn_bds, ps_bds])
 
-    def set_pns3_bds(self):
+    def set_PNS3_bds(self):
         """
         This method sets the class attribute for the bounds for PNS3 = (PNS,
         PN, PS).
@@ -578,7 +578,7 @@ class Bounder_ana:
 
         """
         if self.only_obs:
-            self.set_pns3_bds_if_only_obs()
+            self.set_PNS3_bds_if_only_obs()
             return
 
         any_exo = self.strong_exo or self.exogeneity
@@ -647,7 +647,7 @@ class Bounder_ana:
 
         self.pns3_bds = np.array([pns_bds, pn_bds, ps_bds])
 
-    def get_eu_bds(self):
+    def get_EU_bds(self):
         """
         Returns the bounds for EU (expected utility).
 
@@ -659,7 +659,7 @@ class Bounder_ana:
         """
         return self.eu_bds
 
-    def set_eu_bds(self):
+    def set_EU_bds(self):
         """
         Sets the class attribute self.eu_bds to the bounds for the expected
         utility EU.
@@ -813,7 +813,7 @@ class Bounder_ana:
                 print("%.3f <= %s <= %.3f"
                     % (left[y, x], name, right[y, x]))
 
-    def print_pns3_bds(self,  st=""):
+    def print_PNS3_bds(self,  st=""):
         """
         Prints bounds on PNS3 = (PNS, PN, PS).
 
@@ -833,7 +833,7 @@ class Bounder_ana:
                 + " <= " + st1 + st + " <= "
                 + "%.3f" % self.pns3_bds[i, 1])
 
-    def print_eu_bds(self, st=""):
+    def print_EU_bds(self, st=""):
         """
         Prints bounds for Expected Utility EU
 
@@ -874,11 +874,11 @@ if __name__ == "__main__":
         f.check_exp_prob_bds_satisfied()
         print("Checked that exp. data is within bds imposed by obs. data:")
         print("---------------------------")
-        f.set_pns3_bds()
-        f.print_pns3_bds("_f")
+        f.set_PNS3_bds()
+        f.print_PNS3_bds("_f")
         print("---------------------------")
-        f.set_eu_bds()
-        f.print_eu_bds("_f")
+        f.set_EU_bds()
+        f.print_EU_bds("_f")
 
         print("MALE--------------------------")
         print("input probabilities obtained from exp. and obs. data:")
@@ -899,10 +899,10 @@ if __name__ == "__main__":
         m.check_exp_prob_bds_satisfied()
         print("Checked that exp. data is within bds imposed by obs. data:")
         print("---------------------------")
-        m.set_pns3_bds()
-        m.print_pns3_bds("_m")
+        m.set_PNS3_bds()
+        m.print_PNS3_bds("_m")
         print("---------------------------")
-        m.set_eu_bds()
-        m.print_eu_bds("_m")
+        m.set_EU_bds()
+        m.print_EU_bds("_m")
 
     main()

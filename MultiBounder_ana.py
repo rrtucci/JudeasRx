@@ -108,15 +108,15 @@ class MultiBounder_ana:
                     [e1b0, e1b1]])
             bder.set_exp_probs(e_y_bar_x)
             bder.check_exp_prob_bds_satisfied()
-            bder.set_pns3_bds()
+            bder.set_PNS3_bds()
             if alp_y0_y1 is not None:
                 bder.set_utility_fun(alp_y0_y1)
-                bder.set_eu_bds()
+                bder.set_EU_bds()
         Bounder_ana.check_prob_vec(np.array(list(self.zname_to_pz.values())))
         # for zname, bder in self.zname_to_bounder.items():
         #     print(zname+':')
         #     bder.print_all_probs()
-        #     bder.print_pns3_bds()
+        #     bder.print_PNS3_bds()
         self.print_both_ATE()
 
     def plot_bds(self, horizontal=True):
@@ -134,14 +134,14 @@ class MultiBounder_ana:
 
         """
         zname_to_p3_bds = OrderedDict()
-        zname_to_eu_bds = OrderedDict()
+        zname_to_EU_bds = OrderedDict()
         for zname, bder in self.zname_to_bounder.items():
-            zname_to_p3_bds[zname] = bder.get_pns3_bds()
-            zname_to_eu_bds[zname] = bder.get_eu_bds()
+            zname_to_p3_bds[zname] = bder.get_PNS3_bds()
+            zname_to_EU_bds[zname] = bder.get_EU_bds()
         # print(zname_to_p3_bds)
         Plotter_nz.plot_all_bds(zname_to_p3_bds,
-                                zname_to_eu_bds,
-                                horizontal)
+                                zname_to_EU_bds,
+                                horizontal=horizontal)
 
     def plot_both_ATE(self):
         """

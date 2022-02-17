@@ -164,15 +164,15 @@ class Widgeter:
                 [e1b0_f, e1b1_f]])
             self.bounder_f.set_exp_probs(e_y_bar_x_f)
 
-        self.bounder_m.set_pns3_bds()
-        self.bounder_f.set_pns3_bds()
+        self.bounder_m.set_PNS3_bds()
+        self.bounder_f.set_PNS3_bds()
         
         alp_y0_y1 = np.array([[alp00, alp01],
                              [alp10, alp11]])
         self.bounder_m.set_utility_fun(alp_y0_y1)
         self.bounder_f.set_utility_fun(alp_y0_y1)
-        self.bounder_m.set_eu_bds()
-        self.bounder_f.set_eu_bds()
+        self.bounder_m.set_EU_bds()
+        self.bounder_f.set_EU_bds()
 
     def refresh_slider_colors(self, obs_green):
         """
@@ -445,12 +445,12 @@ class Widgeter:
                     print("bATE_f, ATE_f=", "%.3f, %.3f" % (bATE_f, ATE_f))
                     print("bATE, ATE=", "%.3f, %.3f" % (bATE, ATE))
                 print("PNS3:------------------------------")
-                self.bounder_m.print_pns3_bds('_m')
+                self.bounder_m.print_PNS3_bds('_m')
                 print()
-                self.bounder_f.print_pns3_bds('_f')
+                self.bounder_f.print_PNS3_bds('_f')
                 print("EU:--------------------------------")
-                self.bounder_m.print_eu_bds('_m')
-                self.bounder_f.print_eu_bds('_f')
+                self.bounder_m.print_EU_bds('_m')
+                self.bounder_f.print_EU_bds('_f')
 
             title = "jrx" + str(str(datetime.now())) + ".txt"
             with open(title, "w") as f:
@@ -566,11 +566,11 @@ class Widgeter:
             # refresh self.pmale using slider value
             self.pmale = pmale_slider
 
-            p3_bds_m = self.bounder_m.get_pns3_bds()
-            p3_bds_f = self.bounder_f.get_pns3_bds()
+            p3_bds_m = self.bounder_m.get_PNS3_bds()
+            p3_bds_f = self.bounder_f.get_PNS3_bds()
 
-            eu_bds_m = self.bounder_m.get_eu_bds()
-            eu_bds_f = self.bounder_f.get_eu_bds()
+            eu_bds_m = self.bounder_m.get_EU_bds()
+            eu_bds_f = self.bounder_f.get_EU_bds()
 
             Plotter_2z.plot_all_bds(p3_bds_m=p3_bds_m, p3_bds_f=p3_bds_f,
                                     eu_bds_m=eu_bds_m, eu_bds_f=eu_bds_f)
