@@ -64,6 +64,7 @@ class Plotter_nz:
         """
         nz = len(zname_to_p3_bds)
         bar_width = .7/nz
+        tsize = Plotter_nz.text_size(bar_width, horizontal=horizontal)
         if not horizontal:
             x_labels = ("PNS", "PN", "PS")
             plt.sca(ax)
@@ -103,18 +104,17 @@ class Plotter_nz:
                                 fmt=".k",
                                 capsize=3)
                 for k in range(3):  # ax.text not vectorized
-                    ax.text(bar_centers[k]-bar_width/5, p3_bds[k, 1]+.02,
+                    ax.text(bar_centers[k]-tsize/500, p3_bds[k, 1]+.02,
                             texts[k],
-                            size=Plotter_nz.text_size(bar_width),
+                            size=tsize,
                             rotation=90)
             else:
                 ax.barh(bar_centers, p3_bds[:, 1] - p3_bds[:, 0],
                        height=bar_width, left=p3_bds[:, 0])
                 for k in range(3):  # ax.text not vectorized
-                    ax.text(p3_bds[k, 1], bar_centers[k] - bar_width / 4,
+                    ax.text(p3_bds[k, 1], bar_centers[k]-tsize/500,
                             texts[k],
-                            size=Plotter_nz.text_size(
-                                bar_width, horizontal=True),
+                            size=tsize,
                             rotation=0)
                     if zname_to_p3_stats is not None:
                         p3_stats = zname_to_p3_stats[zname]
@@ -154,6 +154,7 @@ class Plotter_nz:
         """
         nz = len(zname_to_EU_bds)
         bar_width = .7/nz
+        tsize = Plotter_nz.text_size(bar_width, horizontal=horizontal)
         plt.sca(ax)
         if not horizontal:
             if not positive:
@@ -190,8 +191,8 @@ class Plotter_nz:
             if not horizontal:
                 ax.bar(bar_center, eu_bds[1]-eu_bds[0],
                         width=bar_width, bottom=eu_bds[0])
-                ax.text(bar_center-bar_width/5, eu_bds[1]+.02, texto,
-                        size=Plotter_nz.text_size(bar_width),
+                ax.text(bar_center-tsize/500, eu_bds[1]+.02, texto,
+                        size=tsize,
                         rotation=90)
                 if zname_to_EU_stats is not None:
                     eu_stats = zname_to_EU_stats[zname]
@@ -203,9 +204,8 @@ class Plotter_nz:
             else:
                 ax.barh(bar_center, eu_bds[1]-eu_bds[0],
                         height=bar_width, left=eu_bds[0])
-                ax.text(eu_bds[1], bar_center - bar_width/4,  texto,
-                        size=Plotter_nz.text_size(
-                            bar_width, horizontal=True),
+                ax.text(eu_bds[1], bar_center-tsize/500,  texto,
+                        size=tsize,
                         rotation=0)
                 if zname_to_EU_stats is not None:
                     eu_stats = zname_to_EU_stats[zname]
@@ -241,11 +241,12 @@ class Plotter_nz:
         -------
         None
         """
+        nz = len(zname_to_p3_bds)
         if not horizontal:
-            plt.figure(figsize=(12, 5))
+            plt.figure(figsize=(12, 8.5))
             gs = gridspec.GridSpec(1, 2, width_ratios=[4, 1])
         else:
-            plt.figure(figsize=(5, 5))
+            plt.figure(figsize=(8.5, 12))
             gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
 
         ax1 = plt.subplot(gs[0])
