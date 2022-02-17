@@ -218,6 +218,7 @@ class MultiBounder_MC:
 
 
 if __name__ == "__main__":
+    from Plotter_nz import *
     def main():
         imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet(
             draw=False, use_Y0Y1=True, only_obs=False)
@@ -236,6 +237,11 @@ if __name__ == "__main__":
         print(
             "[[mu PNS, sigma PNS],\n [mu PN, sigma PN],\n [mu PS, sigma PS]]:")
         pprint(dict(bder.get_PNS3_stats()))
+        ax = plt.subplot()
+        Plotter_nz.plot_p3_bds(ax, bder.get_PNS3_bds(),
+            zname_to_p3_stats=bder.get_PNS3_stats(),
+            horizontal=True)
+        plt.show()
 
 
     main()

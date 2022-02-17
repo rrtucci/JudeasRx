@@ -169,6 +169,7 @@ class IdentifiabilityChecker:
 
 
 if __name__ == "__main__":
+    from Plotter_nz import *
     def main():
         doX_bnet = DoX_BayesNet.build_test_doX_bnet(draw=False)
         # print("kkkll", doX_bnet.nodes)
@@ -182,6 +183,7 @@ if __name__ == "__main__":
         pprint(dict(checker.get_query_bds()))
         print("control coords to query stats:")
         pprint(dict(checker.get_query_stats()))
-
-
+        Plotter_nz.plot_query_bds(checker.get_query_bds(),
+            zname_to_query_stats=checker.get_query_stats(),
+            horizontal=True)
     main()
