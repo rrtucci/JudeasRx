@@ -203,7 +203,7 @@ class MultiBounder_ana:
     def get_ATE(self):
         """
         Returns a tuple consisting of (1) a dictionary mapping zname to
-        ATE_z = E{1|1,z} - E_{1,0,z} and (2) the expected ATE
+        ATE_z = E{1|1,z} - E_{1,0,z} and (2) the z-averaged ATE_z
         defined as ATE=\sum_z P(z) ATE_z
 
         Returns
@@ -224,7 +224,7 @@ class MultiBounder_ana:
         """
         Returns a tuple consisting of (1) a dictionary mapping zname to
         backdoor ATE defined as bdoorATE_z = O{1|1,z} - O_{1,0,z} and (2)
-        the expected bdoorATE defined as bdoorATE=\sum_z P(z) bdoorATE_z
+        the z-averaged bdoorATE_z defined as bdoorATE=\sum_z P(z) bdoorATE_z
 
         Returns
         -------
@@ -253,10 +253,10 @@ class MultiBounder_ana:
             return
         ate_dict, exp = self.get_ATE()
         print("------------------------------------")
-        print("Expected ATE=", exp)
         print("z name:  probability of z, ATE_z")
         for zname, ate in ate_dict.items():
             print(zname, ":", '%.3f, %.3f' % (self.zname_to_pz[zname], ate))
+        print("Expected ATE_z=", exp)
 
     def print_bdoorATE(self):
         """
@@ -269,11 +269,10 @@ class MultiBounder_ana:
         """
         ate_dict, exp = self.get_bdoorATE()
         print("------------------------------------")
-        print("Expected bdoorATE=", exp)
         print("z name:  probability of z, bdoorATE_z")
         for zname, ate in ate_dict.items():
             print(zname + ":", '%.3f, %.3f'%(self.zname_to_pz[zname], ate))
-
+        print("Expected bdoorATE_z=", exp)
 
     def print_both_ATE(self):
         """
@@ -292,12 +291,13 @@ class MultiBounder_ana:
         ate_dict_o, exp_o = self.get_bdoorATE()
         ate_dict_e, exp_e = self.get_ATE()
         print("------------------------------------")
-        print("Expected ATE, Expected bdoorATE:", exp_e, exp_o )
         print("z name:  probability of z, ATE_z, bdoorATE_z")
         for zname, exp_e in ate_dict_e.items():
             exp_o = ate_dict_o[zname]
             print(zname + ":", '%.3f, %.3f, %.3f'
                   %(self.zname_to_pz[zname], exp_e, exp_o))
+        print("Expected ATE_z=", exp_e)
+        print("Expected bdoorATE_z=", exp_o)
 
 if __name__ == "__main__":
 

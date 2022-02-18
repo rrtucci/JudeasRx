@@ -243,10 +243,10 @@ class Plotter_nz:
         """
         nz = len(zname_to_p3_bds)
         if not horizontal:
-            plt.figure(figsize=(12, 8.5))
+            plt.figure(figsize=(12, 5))
             gs = gridspec.GridSpec(1, 2, width_ratios=[4, 1])
         else:
-            plt.figure(figsize=(8.5, 12))
+            plt.figure(figsize=(5, 5))
             gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
 
         ax1 = plt.subplot(gs[0])
@@ -265,7 +265,7 @@ class Plotter_nz:
         """
         This method is called by class Cprob_. It draws a scatter plot of
         (bdoorATE_z, z) for all z and (ATE_z, z) for all z. It also plots
-        vertical lies at the expected bdoorATE and expected ATE.
+        vertical lies at the z-averaged bdoorATE_z and ATE_z.
 
         Parameters
         ----------
@@ -288,9 +288,9 @@ class Plotter_nz:
             ATE_e, exp_e = list(ATE[0].values()), ATE[1]
             ax.scatter(ATE_e, znames, color='hotpink')
             ax.axvline(x=exp_e, color='hotpink')
-            ax.legend(["ATE", "Backdoor ATE"])
+            ax.legend(["mean ATE", "mean Backdoor ATE"])
         else:
-            ax.legend(["Backdoor ATE"])
+            ax.legend(["mean Backdoor ATE"])
 
         ax.set_xlim(-1, 1)
         ax.grid(linestyle='--', axis='y')
