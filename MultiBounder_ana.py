@@ -165,11 +165,13 @@ class MultiBounder_ana:
         This static method is a constructor. Whereas the constructor
         __init__ gets its input probabilities from a dictionary,
         this constructor gets them from a file located at 'path'. The file
-        is a csv file with very special structure which is checked. The file
-        must contain columns called "zname", "o1b0", "o1b1", "px1", "e1b0",
-        "e1b1", and "pz". The file may contain other columns, but they will
-        be disregarded. The "zname" column contains the names of the strata.
-        The other columns all contain probabilities.
+        is a csv file with a very special structure which is checked. The
+        file must contain columns called "zname", "o1b0", "o1b1", "px1",
+        "e1b0", "e1b1", and "pz". The file may contain other columns,
+        but they will be disregarded. If you have no need for some of these
+        checked-for columns, create dummy ones anyway. The order of the
+        columns does not matter. The "zname" column contains the names of
+        the strata. The other columns all contain probabilities.
 
         Parameters
         ----------
