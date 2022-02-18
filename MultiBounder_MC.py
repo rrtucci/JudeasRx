@@ -216,6 +216,27 @@ class MultiBounder_MC:
                     PNS3_stats[k][0] = next_mu
                     PNS3_stats[k][1] = next_sigma
 
+    def print_PNS3_bds_and_stats(self):
+        """
+        Prints class attributes trol_coords_to_PNS3_bds and
+        trol_coords_to_PNS3_stats, where PNS3=(PNS, PN, PS).
+
+        Returns
+        -------
+        None
+
+        """
+        print("control nodes:",
+              [nd.name for nd in self.trol_list])
+        print("control coords to PNS3 bounds,")
+        print(
+            "[[low PNS, high PNS],\n [low PN, high PN],\n [low PS, high PS]]:")
+        pprint(dict(self.get_PNS3_bds()))
+        print("control coords to PNS3 statistics,")
+        print(
+            "[[mu PNS, sigma PNS],\n [mu PN, sigma PN],\n [mu PS, sigma PS]]:")
+        pprint(dict(self.get_PNS3_stats()))
+
 
 if __name__ == "__main__":
     from Plotter_nz import *
@@ -227,16 +248,7 @@ if __name__ == "__main__":
                           num_1world_samples=100,
                           num_worlds=5)
         bder.set_PNS3_bds_and_stats()
-        print("control nodes:",
-              [nd.name for nd in bder.trol_list])
-        print("control coords to PNS3 bounds,")
-        print(
-            "[[low PNS, high PNS],\n [low PN, high PN],\n [low PS, high PS]]:")
-        pprint(dict(bder.get_PNS3_bds()))
-        print("control coords to PNS3 statistics,")
-        print(
-            "[[mu PNS, sigma PNS],\n [mu PN, sigma PN],\n [mu PS, sigma PS]]:")
-        pprint(dict(bder.get_PNS3_stats()))
+        bder.print_PNS3_bds_and_stats()
         ax = plt.subplot()
         Plotter_nz.plot_p3_bds(ax, bder.get_PNS3_bds(),
             zname_to_p3_stats=bder.get_PNS3_stats(),

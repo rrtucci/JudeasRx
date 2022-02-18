@@ -167,6 +167,22 @@ class IdentifiabilityChecker:
                 q_stats[0] = next_mu
                 q_stats[1] = next_sigma
 
+    def print_query_bds_and_stats(self):
+        """
+        Prints class attributes trol_coords_to_query_bds and
+        trol_coords_to_query_stats.
+
+        Returns
+        -------
+        None
+
+        """
+        print("control nodes:",
+              [nd.name for nd in self.trol_list])
+        print("control coords to query bounds (low, high):")
+        pprint(dict(self.get_query_bds()))
+        print("control coords to query statistics (mu, sigma):")
+        pprint(dict(self.get_query_stats()))
 
 if __name__ == "__main__":
     from Plotter_nz import *
@@ -177,12 +193,7 @@ if __name__ == "__main__":
                           num_1world_samples=100,
                           num_worlds=5)
         checker.set_query_bds_and_stats()
-        print("control nodes:",
-              [nd.name for nd in checker.trol_list])
-        print("control coords to query bounds:")
-        pprint(dict(checker.get_query_bds()))
-        print("control coords to query stats:")
-        pprint(dict(checker.get_query_stats()))
+        checker.print_query_bds_and_stats()
         Plotter_nz.plot_query_bds(checker.get_query_bds(),
             zname_to_query_stats=checker.get_query_stats(),
             horizontal=True)
