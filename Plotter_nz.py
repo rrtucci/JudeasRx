@@ -308,8 +308,10 @@ class Plotter_nz:
         """
         This method plots a min-max bar for the bounds of a query for each
         stratum with name 'zname'. If zname_to_query_stats is given,
-        it plots error bars within those min-max bars. We define a query to
-        be a probability, so its value is between 0 and 1.
+        it plots error bars within those min-max bars. The error bars are
+        one sigma ( i.e., standard deviation) long on each side of mu (i.e.,
+        mean). We define a query to be a probability, so its value is between
+        0 and 1.
 
         Parameters
         ----------
