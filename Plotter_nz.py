@@ -43,7 +43,8 @@ class Plotter_nz:
         This method plots 3 min-max bars for the bounds of PNS3 = (PNS, PN,
         PS) for each stratum with name 'zname'. If zname_to_p3_stats is
         given, it plots error bars within those min-max bars. The error bars
-        are one sigma (standard deviation) long on each side of mu (mean).
+        are one sigma (i.e., standard deviation) long on each side of mu (
+        i.e., mean).
 
         Parameters
         ----------
@@ -132,7 +133,7 @@ class Plotter_nz:
         This method plots a min-max bar for the bounds of EU for each
         stratum with name 'zname'. If zname_to_EU_stats is given, it plots
         error bars within those min-max bars. The error bars are one sigma (
-        standard deviation) long on each side of mu (mean).
+        i.e., standard deviation) long on each side of mu (i.e., mean).
 
         Parameters
         ----------
