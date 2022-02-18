@@ -65,6 +65,14 @@ mature Python library
 for doing MCMC (Markov Chain Monte Carlo), PyMC3. A Jupyter notebook with 
 an example of this is provided.
 
+## Indentifiability Checker
+As an added bonus, JudeasRx contains software
+that allows you to check
+whether a query Q = P(y|do(X)=x, c) is Pearl-identifiable.
+Jupyter notebooks verifying Pearl's
+backdoor and frontdoor adjustment formulae using 
+our "Identifiability Checker" are provided.
+
 ## Mathematical Theory and Notation 
 The mathematical theory and notation are described in gory  but 
 entertaining detail in the chapters entitled  “Personalized Treatment 
