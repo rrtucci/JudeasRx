@@ -68,7 +68,8 @@ an example of this is provided.
 ## Indentifiability Checker
 As an added bonus, JudeasRx contains software
 that allows you to check
-whether a query Q = P(y|do(X)=x, c) is Pearl-identifiable.
+whether a query Q = P(y|do(X)=x, c) is Pearl-identifiable
+for a specific DAG.
 Jupyter notebooks verifying Pearl's
 backdoor and frontdoor adjustment formulae using 
 our "Identifiability Checker" are provided.
