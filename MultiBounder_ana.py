@@ -296,8 +296,8 @@ class MultiBounder_ana:
             exp_o = ate_dict_o[zname]
             print(zname + ":", '%.3f, %.3f, %.3f'
                   %(self.zname_to_pz[zname], exp_e, exp_o))
-        print("Expected ATE_z=", exp_e)
-        print("Expected bdoorATE_z=", exp_o)
+        print("mean ATE_z=", exp_e)
+        print("mean bdoorATE_z=", exp_o)
 
 if __name__ == "__main__":
 

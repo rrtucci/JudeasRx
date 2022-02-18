@@ -288,9 +288,9 @@ class Plotter_nz:
             ATE_e, exp_e = list(ATE[0].values()), ATE[1]
             ax.scatter(ATE_e, znames, color='hotpink')
             ax.axvline(x=exp_e, color='hotpink')
-            ax.legend(["mean ATE", "mean Backdoor ATE"])
+            ax.legend(["mean ATE_z", "mean Backdoor ATE_z"])
         else:
-            ax.legend(["mean Backdoor ATE"])
+            ax.legend(["mean Backdoor ATE_z"])
 
         ax.set_xlim(-1, 1)
         ax.grid(linestyle='--', axis='y')
