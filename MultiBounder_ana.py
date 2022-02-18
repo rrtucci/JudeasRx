@@ -203,7 +203,7 @@ class MultiBounder_ana:
     def get_ATE(self):
         """
         Returns a tuple consisting of (1) a dictionary mapping zname to
-        ATE_z = E{1|1,z} - E_{1,0,z} and (2) the z-averaged ATE_z
+        ATE_z = E{1|1,z} - E_{1,0,z} and (2) the mean ATE_z
         defined as ATE=\sum_z P(z) ATE_z
 
         Returns
@@ -224,7 +224,7 @@ class MultiBounder_ana:
         """
         Returns a tuple consisting of (1) a dictionary mapping zname to
         backdoor ATE defined as bdoorATE_z = O{1|1,z} - O_{1,0,z} and (2)
-        the z-averaged bdoorATE_z defined as bdoorATE=\sum_z P(z) bdoorATE_z
+        the mean bdoorATE_z defined as bdoorATE=\sum_z P(z) bdoorATE_z
 
         Returns
         -------
@@ -256,7 +256,7 @@ class MultiBounder_ana:
         print("z name:  probability of z, ATE_z")
         for zname, ate in ate_dict.items():
             print(zname, ":", '%.3f, %.3f' % (self.zname_to_pz[zname], ate))
-        print("Expected ATE_z=", exp)
+        print("mean ATE_z=", exp)
 
     def print_bdoorATE(self):
         """
@@ -272,7 +272,7 @@ class MultiBounder_ana:
         print("z name:  probability of z, bdoorATE_z")
         for zname, ate in ate_dict.items():
             print(zname + ":", '%.3f, %.3f'%(self.zname_to_pz[zname], ate))
-        print("Expected bdoorATE_z=", exp)
+        print("mean bdoorATE_z=", exp)
 
     def print_both_ATE(self):
         """

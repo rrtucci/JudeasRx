@@ -130,7 +130,8 @@ class IdentifiabilityChecker:
         Returns
         -------
         OrderedDict[tuple, np.array]
-            np.array is [mean of Q, sigma of Q (i.e., stadard deviation)]
+            np.array is [mu of Q, sigma of Q]
+            mu=mean, sigma=standard deviation
 
         """
         return self.trol_coords_to_query_stats

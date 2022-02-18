@@ -265,7 +265,7 @@ class Plotter_nz:
         """
         This method is called by class Cprob_. It draws a scatter plot of
         (bdoorATE_z, z) for all z and (ATE_z, z) for all z. It also plots
-        vertical lies at the z-averaged bdoorATE_z and ATE_z.
+        vertical lies at the mean bdoorATE_z and mean ATE_z.
 
         Parameters
         ----------

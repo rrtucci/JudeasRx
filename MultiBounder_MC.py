@@ -136,21 +136,6 @@ class MultiBounder_MC:
 
         return trol_coords_to_PNS3
 
-    def get_PNS3_bds(self):
-        """
-        Gets class attribute trol_coords_to_PNS3_bds, where PNS3=(PNS, PN,
-        PS).
-
-        Returns
-        -------
-        OrderedDict[tuple, np.array]
-            np.array shape=(3, 2)
-            [[PNS low, PNS high],
-            [PN low, PN high],
-            [PS low, PS high]]
-
-        """
-        return self.trol_coords_to_PNS3_bds
 
     def get_PNS3_bds(self):
         """
