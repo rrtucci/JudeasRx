@@ -297,7 +297,7 @@ class Plotter_nz:
 
         ax.set_xlim(-1, 1)
         ax.grid(linestyle='--', axis='y')
-        ax.set_ylabel('z value')
+        ax.set_ylabel('z name')
         ax.set_xlabel('difference of two probabilities')
 
         plt.show()
