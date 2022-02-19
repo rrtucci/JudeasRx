@@ -109,7 +109,7 @@ class MultiBounder_ana:
             bder.print_exp_probs_bds()
             bder.check_exp_prob_bds_satisfied()
             print("Checked that Exp. Probs. satisfy bounds" +
-                  " imposed by Obs. Probs.")
+                  " imposed by Obs. Probs. for stratum " + zname)
 
             bder.set_PNS3_bds()
             if alp_y0_y1 is not None:
