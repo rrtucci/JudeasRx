@@ -34,11 +34,3 @@ def next_mu_sigma(n, next_x, mu, sigma):
         next_mu = next_x
         next_sigma_sq = 0.
     return next_mu, sqrt(next_sigma_sq)
-
-
-def print_bnet(bnet):
-    for nd in bnet.nodes:
-        print(nd.name, ", parents=" + str([x.name for x in nd.parents]),
-              ", children=" + str([x.name for x in nd.children]))
-        print(nd.potential)
-        print()

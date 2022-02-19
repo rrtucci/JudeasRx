@@ -747,8 +747,8 @@ class Potential:
 
     def __str__(self):
         """
-        What string is outputted by print(pot) where pot is an object of
-        Potential? The Shadow and __str__ know.
+        Specifies the string outputted by print(obj) where obj is an object
+        of Potential.
 
         Returns
         -------
@@ -757,6 +757,7 @@ class Potential:
         """
         return str([node.name for node in self.ord_nodes]) \
             + "\n" + str(self.pot_arr)
+
 
 if __name__ == "__main__":
     def main():

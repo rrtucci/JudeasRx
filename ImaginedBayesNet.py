@@ -387,11 +387,7 @@ if __name__ == "__main__":
     def main():
         imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet(
             draw=True, use_Y0Y1=True, only_obs=False)
-        for nd in imagined_bnet.nodes:
-            print(nd.name, ", parents=" + str([x.name for x in nd.parents]),
-                  ", children=" + str([x.name for x in nd.children]))
-            print(nd.potential.pot_arr)
-            print()
+        print(imagined_bnet)
 
     main()
 

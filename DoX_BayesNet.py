@@ -214,10 +214,6 @@ if __name__ == "__main__":
 
     def main():
         doX_bnet = DoX_BayesNet.build_test_doX_bnet(draw=True)
-        for nd in doX_bnet.nodes:
-            print(nd.name, ", parents=" + str([x.name for x in nd.parents]),
-                  ", children=" + str([x.name for x in nd.children]))
-            print(nd.potential.pot_arr)
-            print()
+        print(doX_bnet)
 
     main()
