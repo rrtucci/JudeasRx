@@ -96,9 +96,6 @@ class MultiBounder_ana:
             bder.monotonicity = self.monotonicity
 
             bder.set_exp_probs_bds()  # this depends on bder.monotonicity flag
-            print(zname + ":")
-            bder.print_exp_probs_bds()
-
             if self.only_obs:
                 e_y_bar_x = np.array([[.5, .5],
                                       [.5, .5]])
@@ -107,7 +104,13 @@ class MultiBounder_ana:
                     [1 - e1b0, 1 - e1b1],
                     [e1b0, e1b1]])
             bder.set_exp_probs(e_y_bar_x)
+            
+            print(zname + ":")
+            bder.print_exp_probs_bds()
             bder.check_exp_prob_bds_satisfied()
+            print("Checked that Exp. Probs. satisfy bounds" +
+                  " imposed by Obs. Probs.")
+
             bder.set_PNS3_bds()
             if alp_y0_y1 is not None:
                 bder.set_utility_fun(alp_y0_y1)
@@ -117,7 +120,6 @@ class MultiBounder_ana:
         #     print(zname+':')
         #     bder.print_all_probs()
         #     bder.print_PNS3_bds()
-        self.print_both_ATE()
 
     def plot_bds(self, horizontal=True):
         """
@@ -234,13 +236,13 @@ class MultiBounder_ana:
 
         """
         exp = 0
-        zname_to_ATE = OrderedDict()
+        zname_to_bATE = OrderedDict()
         for zname, bder in self.zname_to_bounder.items():
             pz = self.zname_to_pz[zname]
             ate = bder.get_bdoorATE()
             exp += ate * pz
-            zname_to_ATE[zname] = ate
-        return zname_to_ATE, exp
+            zname_to_bATE[zname] = ate
+        return zname_to_bATE, exp
 
     def print_ATE(self):
         """
@@ -254,7 +256,6 @@ class MultiBounder_ana:
         if self.only_obs:
             return
         ate_dict, exp = self.get_ATE()
-        print("------------------------------------")
         print("z name:  probability of z, ATE_z")
         for zname, ate in ate_dict.items():
             print(zname, ":", '%.3f, %.3f' % (self.zname_to_pz[zname], ate))
@@ -269,10 +270,9 @@ class MultiBounder_ana:
         None
 
         """
-        ate_dict, exp = self.get_bdoorATE()
-        print("------------------------------------")
+        bATE_dict, exp = self.get_bdoorATE()
         print("z name:  probability of z, bdoorATE_z")
-        for zname, ate in ate_dict.items():
+        for zname, ate in bATE_dict.items():
             print(zname + ":", '%.3f, %.3f'%(self.zname_to_pz[zname], ate))
         print("mean bdoorATE_z=", exp)
 
@@ -292,12 +292,11 @@ class MultiBounder_ana:
 
         ate_dict_o, exp_o = self.get_bdoorATE()
         ate_dict_e, exp_e = self.get_ATE()
-        print("------------------------------------")
         print("z name:  probability of z, ATE_z, bdoorATE_z")
-        for zname, exp_e in ate_dict_e.items():
-            exp_o = ate_dict_o[zname]
+        for zname, ez in ate_dict_e.items():
+            oz = ate_dict_o[zname]
             print(zname + ":", '%.3f, %.3f, %.3f'
-                  %(self.zname_to_pz[zname], exp_e, exp_o))
+                  %(self.zname_to_pz[zname], ez, oz))
         print("mean ATE_z=", exp_e)
         print("mean bdoorATE_z=", exp_o)
 
@@ -318,6 +317,8 @@ if __name__ == "__main__":
         mba = MultiBounder_ana(zname_to_input_probs,
                        alp_y0_y1=alp_y0_y1,
                        only_obs=False)
+        print("------------------------------------")
+        mba.print_both_ATE()
         mba.plot_bds()
         mba.plot_both_ATE()
     main()
