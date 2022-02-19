@@ -14,6 +14,9 @@ class MultiBounder_ana:
     stratum z with name 'zname'. It can also take as input a utility
     function alp_y0_y1 = \alpha_{y_0, y_1} and various flags.
 
+    If only_obs=True (i.e., only observational data, no experimental data),
+    then the constructor sets e1b0=e1b1=1/2 for all strata.
+
     For each stratum, this class constructs a Bounder_ana object and asks it to
     calculate PNS3 and EU bounds. It stores all the bounders it constructs.
     Its method plot_bds() calls class Plotter_nz to plot the bounds stored in
@@ -70,6 +73,10 @@ class MultiBounder_ana:
         self.alp_y0_y1 = np.zeros(shape=(2, 2))
         if alp_y0_y1 is not None:
             self.alp_y0_y1 = alp_y0_y1
+
+        if self.only_obs:
+            print("No Exp. Probs. (only_obs=True), so setting e1b0=e1b1=1/2 "
+                  "for all strata.")
 
         self.zname_to_pz = OrderedDict()
         self.zname_to_bounder = OrderedDict()
@@ -227,7 +234,7 @@ class MultiBounder_ana:
     def get_bdoorATE(self):
         """
         Returns a tuple consisting of (1) a dictionary mapping zname to
-        backdoor ATE defined as bdoorATE_z = O{1|1,z} - O_{1,0,z} and (2)
+        backdoor ATE_z defined as bdoorATE_z = O{1|1,z} - O_{1,0,z} and (2)
         the mean bdoorATE_z defined as bdoorATE=\sum_z P(z) bdoorATE_z
 
         Returns
@@ -290,15 +297,15 @@ class MultiBounder_ana:
             self.print_bdoorATE()
             return
 
-        ate_dict_o, exp_o = self.get_bdoorATE()
-        ate_dict_e, exp_e = self.get_ATE()
+        ate_dict_o, mean_o = self.get_bdoorATE()
+        ate_dict_e, mean_e = self.get_ATE()
         print("z name:  probability of z, ATE_z, bdoorATE_z")
         for zname, ez in ate_dict_e.items():
             oz = ate_dict_o[zname]
             print(zname + ":", '%.3f, %.3f, %.3f'
                   %(self.zname_to_pz[zname], ez, oz))
-        print("mean ATE_z=", exp_e)
-        print("mean bdoorATE_z=", exp_o)
+        print("mean ATE_z=", mean_e)
+        print("mean bdoorATE_z=", mean_o)
 
 if __name__ == "__main__":
 

@@ -266,9 +266,10 @@ class Plotter_nz:
     @staticmethod
     def plot_both_ATE(bdoorATE, ATE=None):
         """
-        This method is called by class Cprob_. It draws a scatter plot of
-        (bdoorATE_z, z) for all z and (ATE_z, z) for all z. It also plots
-        vertical lies at the mean bdoorATE_z and mean ATE_z.
+        This method is called by class MultiBounder_ana. It draws a scatter
+        plot of (bdoorATE_z, z) for all z and a vertical line at mean
+        bdoorATE_z. If ATE  is not None, it also draws a scatter plot of  (
+        ATE_z, z) for all z and a vertical line at the mean ATE_z.
 
         Parameters
         ----------
@@ -280,17 +281,17 @@ class Plotter_nz:
         None
 
         """
-        ATE_o, exp_o = list(bdoorATE[0].values()), bdoorATE[1]
-        znames = list(ATE[0].keys())
+        ATE_o, mean_o = list(bdoorATE[0].values()), bdoorATE[1]
+        znames = list(bdoorATE[0].keys())
 
         fig, ax = plt.subplots(1, 1)
         ax.scatter(ATE_o, znames, color='blue')
-        ax.axvline(x=exp_o, color='blue')
+        ax.axvline(x=mean_o, color='blue')
 
         if ATE is not None:
-            ATE_e, exp_e = list(ATE[0].values()), ATE[1]
+            ATE_e, mean_e = list(ATE[0].values()), ATE[1]
             ax.scatter(ATE_e, znames, color='hotpink')
-            ax.axvline(x=exp_e, color='hotpink')
+            ax.axvline(x=mean_e, color='hotpink')
             ax.legend(["mean ATE_z", "mean Backdoor ATE_z"])
         else:
             ax.legend(["mean Backdoor ATE_z"])
