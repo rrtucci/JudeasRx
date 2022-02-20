@@ -309,7 +309,7 @@ class MultiBounder_ana:
 
 if __name__ == "__main__":
 
-    def main():
+    def main(only_obs):
         # o1b0 = input_probs[0]
         # o1b1 = input_probs[1]
         # px1 = input_probs[2]
@@ -323,12 +323,14 @@ if __name__ == "__main__":
         alp_y0_y1 = np.array([[.5, -.4], [.2, .1]])
         mba = MultiBounder_ana(zname_to_input_probs,
                        alp_y0_y1=alp_y0_y1,
-                       only_obs=False)
+                       only_obs=only_obs)
         print("------------------------------------")
         mba.print_both_ATE()
         mba.plot_bds()
         mba.plot_both_ATE()
-    main()
+        print("************************")
+    main(False)
+    main(True)
 
 
 
