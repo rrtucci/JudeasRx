@@ -32,7 +32,7 @@ class Bounder_ana:
     A given O_{y|x} imposes bounds on E_{y|x} that must be obeyed for
     consistency. This class also calculates those bounds.
 
-    In this app, a Bounder_ana object is created for each strata, where there
+    In this app, a Bounder_ana object is created for each stratum, where there
     can be n>=2 strata (i.e., n values of z). For example, there can be two
     strata, z=gender\in {male, female}, a Bounder_ana object bounder_m for
     males, and a Bounder_ana object bounder_f for females.

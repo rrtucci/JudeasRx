@@ -15,7 +15,7 @@ class MultiBounder_ana:
     function alp_y0_y1 = \alpha_{y_0, y_1} and various flags.
 
     If only_obs=True (i.e., only observational data, no experimental data),
-    then the constructor sets e1b0=e1b1=1/2 for all strata.
+    set e1b0 and e1b1 for each stratum to a dummy value. It will not be used.
 
     For each stratum, this class constructs a Bounder_ana object and asks it to
     calculate PNS3 and EU bounds. It stores all the bounders it constructs.
@@ -74,10 +74,6 @@ class MultiBounder_ana:
         if alp_y0_y1 is not None:
             self.alp_y0_y1 = alp_y0_y1
 
-        if self.only_obs:
-            print("No Exp. Probs. (only_obs=True), so setting e1b0=e1b1=1/2 "
-                  "for all strata.")
-
         self.zname_to_pz = OrderedDict()
         self.zname_to_bounder = OrderedDict()
         for zname, input_probs in zname_to_input_probs.items():
@@ -111,12 +107,13 @@ class MultiBounder_ana:
                     [1 - e1b0, 1 - e1b1],
                     [e1b0, e1b1]])
             bder.set_exp_probs(e_y_bar_x)
-            
-            print(zname + ":")
-            bder.print_exp_probs_bds()
-            bder.check_exp_prob_bds_satisfied()
-            print("Checked that Exp. Probs. satisfy bounds" +
-                  " imposed by Obs. Probs. for stratum " + zname)
+
+            if not self.only_obs:
+                print(zname + ":")
+                bder.print_exp_probs_bds()
+                bder.check_exp_prob_bds_satisfied()
+                print("Checked that Exp. Probs. satisfy bounds" +
+                      " imposed by Obs. Probs. for stratum " + zname)
 
             bder.set_PNS3_bds()
             if alp_y0_y1 is not None:

@@ -13,7 +13,7 @@ class IdentifiabilityChecker:
     """
     This class has a doX bnet (an object of DoX_BayesNet) as input. The main
     goal of this class is to calculate bounds for the query Q = P(y=1|do(
-    X)=x, z) for each strata z. Here a strata is one possible assignment of
+    X)=x, z) for each stratum z. Here a stratum is one possible assignment of
     states to the control nodes of the doX bnet.
 
     One particular random assignment to TPMs of the unobserved nodes of the

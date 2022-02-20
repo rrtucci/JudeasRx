@@ -51,9 +51,9 @@ class Plotter_nz:
         ax : Axes
             an axis from matplotlib
         zname_to_p3_bds :  OrderedDict(str, np.array[shape=(3, 2)])
-            ordered dictionary mapping stratum named zname to its pns3 bounds.
+            ordered dictionary mapping stratum named zname to its PNS3 bounds.
         zname_to_p3_stats :  OrderedDict(str, np.array[shape=(3, 2)])
-            ordered dictionary mapping stratum named zname to its pns3
+            ordered dictionary mapping stratum named zname to its PNS3
             statistics. The array has the same shape as in zname_to_p3_bds,
             but it replaces the low bound by the mean mu, and the high bound
             by the standard deviation sigma.          

@@ -17,7 +17,7 @@ class MultiBounder_MC:
 
     This class has an imagined bnet (an object of ImaginedBayesNet) as
     input. The main goal of this class is to calculate bounds for the 3
-    quantities PNS3=(PNS, PN, PS), for each strata z. Here a strata is one
+    quantities PNS3=(PNS, PN, PS), for each stratum z. Here a stratum is one
     possible assignment of states to the control nodes of the imagined bnet.
 
     One particular assignment to the TPMs of the random nodes of the
