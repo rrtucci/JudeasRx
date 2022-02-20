@@ -174,10 +174,11 @@ class MultiBounder_ana:
         is a csv file with a very special structure which is checked. The
         file must contain columns called "zname", "o1b0", "o1b1", "px1",
         "e1b0", "e1b1", and "pz". The file may contain other columns,
-        but they will be disregarded. If you have no need for some of these
-        checked-for columns, create dummy ones anyway. The order of the
-        columns does not matter. The "zname" column contains the names of
-        the strata. The other columns all contain probabilities.
+        but they will be disregarded. If you have no experimental data (
+        only_obs=True), create dummy e1b0 and e1b1 columns anyway (their
+        values will not be used). The order of the columns does not matter.
+        The "zname" column contains the names of the strata. The other
+        columns all contain probabilities.
 
         Parameters
         ----------
