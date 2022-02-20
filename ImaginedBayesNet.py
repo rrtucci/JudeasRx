@@ -94,7 +94,8 @@ class ImaginedBayesNet(BayesNet):
         This dictionary maps trol_coords to oe_data. trol_coords is a tuple
         of states of the control nodes, in the order given by trol_list.
         oe=observational-experimental. oe_data is a list of 5 probabilities
-        [ o1b0, o1b1, px1, e1b0, e1b1]
+        [ o1b0, o1b1, px1, e1b0, e1b1]. If there is no experimental data (
+        i.e., only_obs=True), the values of e1b0 and e1b1 are ignored.
     trol_list : list[BayesNode]
         list of control nodes
     use_Y0Y1 : bool
@@ -384,12 +385,14 @@ class ImaginedBayesNet(BayesNet):
 
 if __name__ == "__main__":
 
-    def main():
+    def main(only_obs):
         imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet(
-            draw=True, use_Y0Y1=True, only_obs=False)
+            draw=True, use_Y0Y1=True, only_obs=only_obs)
         print(imagined_bnet)
+        print("*******************************")
 
-    main()
+    main(False)
+    main(True)
 
 
 
