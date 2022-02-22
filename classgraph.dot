@@ -1,0 +1,21 @@
+strict digraph  {
+BayesNet;
+DoX_BayesNet;
+ImaginedBayesNet;
+Dag;
+Graph_;
+DirectedNode;
+BayesNode;
+Node_;
+Potential;
+DiscreteCondPot;
+DiscreteUniPot;
+BayesNet -> DoX_BayesNet;
+BayesNet -> ImaginedBayesNet;
+Dag -> BayesNet;
+Graph_ -> Dag;
+DirectedNode -> BayesNode;
+Node_ -> DirectedNode;
+Potential -> DiscreteCondPot;
+DiscreteCondPot -> DiscreteUniPot;
+}

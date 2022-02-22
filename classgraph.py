@@ -31,17 +31,25 @@ file_blacklist = [
     'classgraph.py',
     'MyExceptions.py'
 ]
+
+def fix(name):
+    # Graphviz/pydot get confused if use
+    # these terms for node names
+    if name in ['Graph', 'Node']:
+        name += "_"
+    return name
+
 for dir_name in dir_whitelist:
     for fname in os.listdir(dir_name):
         if fname[-3:] == '.py' and fname not in file_blacklist:
-            print("mmmnnnn", dir_name, fname)
+            # print("mmmnnnn", dir_name, fname)
             cl_to_data = pyclbr.readmodule(fname[:-3],
                         [os.path.abspath(dir_name)])
             for cl_name, cl_desc in cl_to_data.items():
                 if os.path.basename(cl_desc.file) != fname:
                     continue
-                pa_list = [x.name for x in cl_desc.super]
-                cl_to_parents[cl_name] = pa_list
+                pa_list = [fix(x.name) for x in cl_desc.super]
+                cl_to_parents[fix(cl_name)] = pa_list
 pp.pprint(cl_to_parents)
 
 # create nx graph and orphans list from cl_to_parents
