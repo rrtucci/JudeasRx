@@ -1,9 +1,8 @@
 import numpy as np
 from collections import OrderedDict
-import pprint as pp
-import pandas as pd
 from Bounder_ana import Bounder_ana
 from Plotter_nz import Plotter_nz
+from Reader import *
 np.set_printoptions(precision=3, floatmode="fixed")
 
 
@@ -125,6 +124,30 @@ class MultiBounder_ana:
         #     bder.print_all_probs()
         #     bder.print_PNS3_bds()
 
+    @staticmethod
+    def create_from_file(path, **kwargs):
+        """
+        This static method is a constructor. Whereas the constructor
+        __init__ gets its input probabilities from a dictionary,
+        this constructor gets them from a file located at 'path'. The file
+        is a csv file with a very special structure which is checked. The
+        file's structure is described in the docstring for
+        Reader.get_obs_exp_probs().
+
+        Parameters
+        ----------
+        path : str
+            path to file with input probabilities.
+        kwargs :
+            same keyword arguments as the __init__ constructor
+
+        Returns
+        -------
+        MultiBounder_ana
+
+        """
+        return MultiBounder_ana(Reader.get_obs_exp_probs(path), **kwargs)
+
     def plot_bds(self, horizontal=True):
         """
         This method asks class Plotter_nz to plot all the bounds stored in
@@ -164,50 +187,6 @@ class MultiBounder_ana:
         else:
             ATE = self.get_ATE()
         Plotter_nz.plot_both_ATE(bdoorATE, ATE=ATE)
-
-    @staticmethod
-    def create_from_file(path, **kwargs):
-        """
-        This static method is a constructor. Whereas the constructor
-        __init__ gets its input probabilities from a dictionary,
-        this constructor gets them from a file located at 'path'. The file
-        is a csv file with a very special structure which is checked. The
-        file must contain columns called "zname", "o1b0", "o1b1", "px1",
-        "e1b0", "e1b1", and "pz". The file may contain other columns,
-        but they will be disregarded. If you have no experimental data (
-        only_obs=True), create dummy e1b0 and e1b1 columns anyway (their
-        values will not be used). The order of the columns does not matter.
-        The "zname" column contains the names of the strata. The other
-        columns all contain probabilities.
-
-        Parameters
-        ----------
-        path : str
-            path to file with input probabilities.
-        kwargs :
-            same keyword arguments as the __init__ constructor
-
-        Returns
-        -------
-        MultiBounder_ana
-
-        """
-        df = pd.read_csv(path)
-        # print(df)
-        cols = ['zname', 'o1b0', 'o1b1', 'px1', 'e1b0', 'e1b1', 'pz']
-        assert all(x in df.columns for x in cols),\
-            "file must have a column named each of the following," \
-            "even if some columns won't be used:"\
-            "['zname', 'o1b0', 'o1b1', 'px1', 'e1b0', 'e1b1', 'pz']"
-        df = df[cols]
-        znames = list(df['zname'])
-        # print(df)
-        zname_to_input_probs = OrderedDict()
-        for k, zname in enumerate(znames):
-            row = list(df.iloc[k])[1:]
-            # print(k, zname, row)
-            zname_to_input_probs[zname] = row
-        return MultiBounder_ana(zname_to_input_probs, **kwargs)
 
     def get_ATE(self):
         """

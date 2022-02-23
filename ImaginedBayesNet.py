@@ -1,4 +1,5 @@
 from graphs.BayesNet import *
+from Reader import *
 import itertools
 from graphviz import Source
 
@@ -156,6 +157,40 @@ class ImaginedBayesNet(BayesNet):
         self.only_obs = only_obs
         self.build_self()
 
+    def read_file(self, path):
+
+        """
+        This method reads a csv file located at 'path', and it returns a
+        trol_coords_to_oe_data dictionary suitable for use as an argument of
+        this class's __init__ constructor. The csv file has a very special
+        structure which is checked. The file's structure is described in the
+        docstring for Reader.get_obs_exp_probs().
+    
+        Parameters
+        ----------
+        path : str
+            path to file with input probabilities.
+    
+        Returns
+        -------
+        dict[tuple[int], list[float]]
+    
+        """
+        zname_to_input_probs = Reader.get_obs_exp_probs(path)
+        trol_range_list = [range(nd.size) for nd in self.trol_list]
+        trol_coords_to_oe_data = {}
+        for trol_coords in itertools.product(*trol_range_list):
+            zname = str(trol_coords)
+            if zname not in zname_to_input_probs:
+                assert False, "zname_to_input_probs dictionary is missing " \
+                              "the trol_coords: " + zname
+            else:
+                input_probs = zname_to_input_probs[zname]
+            # oe_data equals all but last item (i.e., pz) of input_probs
+            trol_coords_to_oe_data[trol_coords] = input_probs[:-1]
+
+        return trol_coords_to_oe_data
+
     def build_self(self):
         """
         Modifies self from input in_bnet to imagined bnet.
@@ -236,9 +271,13 @@ class ImaginedBayesNet(BayesNet):
         self.nd_X.potential.pot_arr = np.zeros(shape=nd_size_list,
                                                dtype=np.float64)
         # define pot_arr for nodes Y0, Y1, X
-        for coords, oe_data in self.trol_coords_to_oe_data.items():
-            assert len(coords) == len(self.trol_list), \
-                "trol_coords in trol_coords_to_oe_data have wrong length"
+        trol_range_list = [range(nd.size) for nd in self.trol_list]
+        for coords in itertools.product(*trol_range_list):
+            if coords not in self.trol_coords_to_oe_data:
+                assert False, "trol_coords_to_oe_data is missing " \
+                              "the trol coords: " + str(coords)
+            else:
+                oe_data = self.trol_coords_to_oe_data[coords]
             assert len(oe_data) == 5 \
                     and max(oe_data) <= 1 \
                     and min(oe_data) >= 0, \

@@ -7,7 +7,7 @@ from shutil import copyfile
 
 """
 The purpose of this script is to generate a file called classgraph.pdf 
-with the class graph for qubiter. The script also generates a file called 
+with the class graph for JudeasRx. The script also generates a file called 
 classgraph_orphans.html that lists the orphan classes. Orphan classes (i.e., 
 classes with no parents or children) don't show up in classgraph.pdf. 
 """
