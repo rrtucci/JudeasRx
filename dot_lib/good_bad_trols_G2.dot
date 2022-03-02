@@ -1,0 +1,7 @@
+digraph G2 {
+    X->Y;
+    Z->X;
+    U->Z,Y;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}

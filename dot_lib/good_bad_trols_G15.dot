@@ -1,0 +1,7 @@
+digraph G15 {
+    X->Y,Z;
+    U->W,Y;
+    Z->W;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}

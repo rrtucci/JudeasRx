@@ -1,0 +1,8 @@
+digraph G5 {
+    X->M;
+    Z->X;
+    U->Z,M;
+    M->Y;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}

@@ -1,0 +1,8 @@
+digraph G6 {
+    X->M;
+    Z->M;
+    U->X,Z;
+    M->Y;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}

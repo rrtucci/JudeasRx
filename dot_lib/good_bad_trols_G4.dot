@@ -1,0 +1,6 @@
+digraph G4 {
+    X->M;
+    Z->X,M;
+    M->Y;
+    Z[style=filled, color=pink];
+}

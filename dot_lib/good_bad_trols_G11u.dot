@@ -1,0 +1,7 @@
+digraph G11u {
+    X->Z;
+    U->Z,Y;
+    Z->Y;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}

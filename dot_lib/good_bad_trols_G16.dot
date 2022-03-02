@@ -1,0 +1,7 @@
+digraph G16 {
+    X->Y;
+    U->Z,Y;
+    X->Z;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}

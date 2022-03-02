@@ -1,0 +1,5 @@
+digraph G18 {
+    X->Y;
+    Y->Z;
+    Z[color=pink,style=filled];
+}

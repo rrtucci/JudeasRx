@@ -1,0 +1,6 @@
+digraph G13 {
+    X->M;
+    Z->M;
+    M->Y;
+    Z[color=pink,style=filled];
+}

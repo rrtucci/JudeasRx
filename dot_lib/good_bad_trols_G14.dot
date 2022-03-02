@@ -1,0 +1,4 @@
+digraph G14 {
+    X->Y,Z;
+    Z[color=pink,style=filled];
+}

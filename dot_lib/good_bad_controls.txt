@@ -1,0 +1,138 @@
+https://ftp.cs.ucla.edu/pub/stat_ser/r493.pdf
+https://dreampuf.github.io/GraphvizOnline/
+
+digraph G1 {
+    X->Y;
+    Z->X,Y;
+    Z[style=filled, color=pink];
+}
+
+digraph G2 {
+    X->Y;
+    Z->X;
+    U->Z,Y;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}
+
+digraph G3 {
+    X->Y;
+    Z->Y;
+    U->X,Z;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}
+
+digraph G4 {
+    X->M;
+    Z->X,M;
+    M->Y;
+    Z[style=filled, color=pink];
+}
+
+digraph G5 {
+    X->M;
+    Z->X;
+    U->Z,M;
+    M->Y;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}
+
+digraph G6 {
+    X->M;
+    Z->M;
+    U->X,Z;
+    M->Y;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}
+
+digraph G7 {
+    X->Y;
+    U1->X,Z;
+    U2->Y,Z;
+    Z[color=pink,style=filled];
+    U1[style=dashed];
+    U2[style=dashed];
+}
+
+digraph G8 {
+    X->Y;
+    Z->Y;
+    Z[color=pink,style=filled];
+}
+
+digraph G9 {
+    X->Y;
+    Z->X;
+    Z[color=pink,style=filled];
+}
+
+digraph G10 {
+    X->Y;
+    Z->X;
+    U->X,Y;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}
+
+digraph G11 {
+    X->Z;
+    Z->Y;
+    Z[color=pink,style=filled];
+}
+
+digraph G12 {
+    X->M;
+    M->Z,Y;
+    Z[color=pink,style=filled];
+}
+
+digraph G11u {
+    X->Z;
+    U->Z,Y;
+    Z->Y;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}
+
+digraph G13 {
+    X->M;
+    Z->M;
+    M->Y;
+    Z[color=pink,style=filled];
+}
+
+digraph G14 {
+    X->Y,Z;
+    Z[color=pink,style=filled];
+}
+
+digraph G15 {
+    X->Y,Z;
+    U->W,Y;
+    Z->W;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}
+
+digraph G16 {
+    X->Y;
+    U->Z,Y;
+    X->Z;
+    Z[color=pink,style=filled];
+    U[style=dashed];
+}
+
+digraph G17 {
+    X->Y, Z;
+    Y->Z;
+    Z[color=pink,style=filled];
+}
+
+digraph G18 {
+    X->Y;
+    Y->Z;
+    Z[color=pink,style=filled];
+}

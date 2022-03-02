@@ -1,0 +1,5 @@
+digraph G12 {
+    X->M;
+    M->Z,Y;
+    Z[color=pink,style=filled];
+}

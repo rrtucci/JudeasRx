@@ -1,0 +1,5 @@
+digraph G9 {
+    X->Y;
+    Z->X;
+    Z[color=pink,style=filled];
+}
