@@ -36,9 +36,9 @@ class DotTool:
         """
         s = gv.Source.from_file(dot_file_path)
 
-        # using display(s) will draw the graph but will not
-        # embed it permanently in the notebook. To embed it
-        # permanently, must generate temporary image file and use Image().
+        # using display(s) will draw the graph but will not embed it
+        # permanently in the notebook. To embed it permanently,
+        # must generate temporary image file and use Image().
         # display(s)
 
         x = s.render("tempo", format='png', view=False)
@@ -56,7 +56,7 @@ class DotTool:
         path to it. Each line of dot_file_path with multiple children is
         replaced in the temporary dot file by multiple lines with only one
         children. For example, a line "X->A,B;" is replaced by two lines
-        "X->A" and "X->B".
+        "X->A;" and "X->B;".
 
         Parameters
         ----------
