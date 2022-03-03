@@ -1,7 +1,7 @@
 digraph G3 {
     X->Y;
     Z->Y;
-    U->X,Z;
+    U->X, Z;
     Z[color=pink,style=filled];
     U[style=dashed];
 }
