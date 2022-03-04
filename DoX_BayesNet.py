@@ -1,6 +1,7 @@
 from graphs.BayesNet import *
 import itertools
 from graphviz import Source
+import copy as cp
 
 
 class DoX_BayesNet(BayesNet):
@@ -18,7 +19,7 @@ class DoX_BayesNet(BayesNet):
     advice on good and bad controls:
     https://ftp.cs.ucla.edu/pub/stat_ser/r493.pdf
 
-    This class modifies the in_bnet structure as follows:
+    This class modifies the structure of in_bnet, as follows:
 
     1. it removes all parents of node X
 
@@ -37,7 +38,7 @@ class DoX_BayesNet(BayesNet):
     nodes list.
 
     Each control node has only one active state. The active state has unit
-    probablity, all other states of the node have zero probability. The
+    probability, all other states of the node have zero probability. The
     active state of the k'th node in trol_nds is given by the k'th int in
     the tuple trol_coords.
 
@@ -135,7 +136,31 @@ class DoX_BayesNet(BayesNet):
             self.nd_X.remove_parent(nd)
         self.topological_sort()
 
-        # define new pots for X and for the control nodes
+        # define new pot for X
+        pot_arr = np.zeros(shape=(self.nd_X.size, ))
+        pot_arr[self.x_val] = 1.0
+        self.nd_X.potential = DiscreteUniPot(False, self.nd_X,
+                                             pot_arr=pot_arr)
+
+    def reset_x_val(self, x_val):
+        """
+        This method resets the value of self.x_val to x_val, and it changes
+        the pot of the X node accordingly.
+
+        Parameters
+        ----------
+        x_val : int
+
+        Returns
+        -------
+        None
+
+        """
+        if x_val == self.x_val:
+            return
+        assert x_val in list(range(self.nd_X.size)), \
+            "x_val is not an integer between 0 and size-1 of node X"
+        self.x_val = x_val
         pot_arr = np.zeros(shape=(self.nd_X.size, ))
         pot_arr[self.x_val] = 1.0
         self.nd_X.potential = DiscreteUniPot(False, self.nd_X,
@@ -155,7 +180,7 @@ class DoX_BayesNet(BayesNet):
             nd.potential.normalize_self()
 
     @staticmethod
-    def build_test_doX_bnet(draw=False):
+    def build_test_doX_bnet(draw=False, jupyter=True):
         """
         This method builds a doX bnet for testing purposes from a simple
         example of an input bnet.
@@ -164,6 +189,8 @@ class DoX_BayesNet(BayesNet):
         ----------
         draw : bool
             True iff draw both input bnet and imagined bnet
+        jupyter : bool
+            True iff draws in Jupyter notebook
 
         Returns
         -------
@@ -192,7 +219,8 @@ class DoX_BayesNet(BayesNet):
             nd.potential.set_to_random()
             nd.potential.normalize_self()
         if draw:
-            in_bnet.draw(algo_num=1)
+            # in_bnet.draw(algo_num=1)
+            in_bnet.gv_draw(jupyter)
 
         trol_list = [nd_Z]
         unobs_nd_list = [nd_U]
@@ -202,18 +230,19 @@ class DoX_BayesNet(BayesNet):
                                 unobs_nd_list,
                                 x_val)
         if draw:
-            doX_bnet.draw(algo_num=1)
-            path1 = './tempo.dot'
-            doX_bnet.write_dot(path1)
-            graph = Source(open(path1).read())
-            graph.view(filename='./tempo.gv')
+            # doX_bnet.draw(algo_num=1)
+            # path1 = './tempo.dot'
+            # doX_bnet.write_dot(path1)
+            # graph = Source(open(path1).read())
+            # graph.view(filename='./tempo.gv')
+            doX_bnet.gv_draw(jupyter)
         return doX_bnet
 
 
 if __name__ == "__main__":
 
     def main():
-        doX_bnet = DoX_BayesNet.build_test_doX_bnet(draw=True)
+        doX_bnet = DoX_BayesNet.build_test_doX_bnet(draw=True, jupyter=False)
         print(doX_bnet)
 
     main()

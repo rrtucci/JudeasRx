@@ -26,7 +26,7 @@ class Bounder_ana:
     Probabilities (these come from a RCT).
 
     Each column of  O_{y|x}, P(x) and E_{y|x} sums to 1, so we chose as
-    independent dofs (degrees of freedom) the probabilties O_{1|0},
+    independent dofs (degrees of freedom) the probabilities O_{1|0},
     O_{1|1}, P(x=1), E_{1|0} and E_{1|1}.
 
     A given O_{y|x} imposes bounds on E_{y|x} that must be obeyed for

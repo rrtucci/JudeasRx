@@ -138,9 +138,11 @@ class PyMC3_model_builder:
                         return lookup_table[tuple(rv_pa_list)]
                     # print("lllkk", nd.name, fun(*([0]*num_parents)))
 
-                    # print("jjjhhg", nd_to_rv, nd_pa_list)
+                    # print("jjjhhg", nd_to_rv)
+                    # print("xxccvn", nd_pa_list)
                     # print("aaahhg", [nd.name for nd in nd_pa_list])
                     rv_pa_list = [nd_to_rv[nd1] for nd1 in nd_pa_list]
+                    # print("cvbghd", rv_pa_list)
                     nd_to_rv[nd] = pm.Categorical(nd.name, fun(*rv_pa_list))
 
 

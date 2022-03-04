@@ -128,7 +128,7 @@ class Plotter_nz:
 
     @staticmethod
     def plot_EU_bds(ax, zname_to_EU_bds, zname_to_EU_stats=None,
-                    horizontal=False, positive=False):
+                    horizontal=False, x_val=-1):
         """
         This method plots a min-max bar for the bounds of EU for each
         stratum with name 'zname'. If zname_to_EU_stats is given, it plots
@@ -147,8 +147,10 @@ class Plotter_nz:
             but it replaces the low bound by the mean mu, and the high bound
             by the standard deviation sigma.
         horizontal : bool
-        positive : bool
-            True iff EU>=0
+        x_val : int
+            If x_val < 0, it assumes this is an EU plot, whereas if x_val >=0,
+            it assumes this is a query plot with the value of the X node
+            equal to x_val.
 
         Returns
         -------
@@ -159,27 +161,28 @@ class Plotter_nz:
         bar_width = .7/nz
         tsize = Plotter_nz.text_size(bar_width, horizontal=horizontal)
         plt.sca(ax)
+        query_str = "query" + "\n" + "Y=1" + "\n" + "X=" + str(x_val)
         if not horizontal:
-            if not positive:
+            if x_val < 0:
                 plt.xticks([0], ["EU"])
                 ax.set_ylim(-1, 1)
                 y_labels = np.arange(-1, 1.1, .2)
                 ax.set_ylabel('utility')
             else:
-                plt.xticks([0], ["query"])
+                plt.xticks([0], [query_str])
                 ax.set_ylim(0, 1)
                 y_labels = np.arange(0, 1.1, .1)
                 ax.set_ylabel('probability')
             ax.set_yticks(y_labels)
             ax.grid(linestyle='--', axis='y')
         else:
-            if not positive:
+            if x_val < 0:
                 plt.yticks([0], ["EU"])
                 ax.set_xlim(-1, 1)
                 x_labels = np.arange(-1, 1.1, .2)
                 ax.set_xlabel('utility')
             else:
-                plt.yticks([0], ["query"])
+                plt.yticks([0], [query_str])
                 ax.set_xlim(0, 1)
                 x_labels = np.arange(0, 1.1, .1)
                 ax.set_xlabel('probability')
@@ -217,7 +220,7 @@ class Plotter_nz:
                                 xerr=eu_stats[1],
                                 fmt=".k",
                                 capsize=3)
-            if not positive:
+            if x_val < 0:
                 if not horizontal:
                     ax.axhline(y=0, color='black')
                 else:
@@ -304,7 +307,7 @@ class Plotter_nz:
         plt.show()
 
     @staticmethod
-    def plot_query_bds(zname_to_query_bds, zname_to_query_stats=None,
+    def plot_query_bds(x_val, zname_to_query_bds, zname_to_query_stats=None,
                     horizontal=False):
         """
         This method plots a min-max bar for the bounds of a query for each
@@ -316,6 +319,8 @@ class Plotter_nz:
 
         Parameters
         ----------
+        x_val : int
+            value of X node
         zname_to_query_bds :  OrderedDict(str, np.array[shape=(2, )])
             ordered dictionary mapping stratum named zname to its query bounds.
         zname_to_query_stats :  OrderedDict(str, np.array[shape=(2, )])
@@ -334,7 +339,7 @@ class Plotter_nz:
         Plotter_nz.plot_EU_bds(ax, zname_to_query_bds,
                                zname_to_EU_stats=zname_to_query_stats,
                                horizontal=horizontal,
-                               positive=True)
+                               x_val=x_val)
         plt.show()
 
 
@@ -410,12 +415,13 @@ if __name__ == "__main__":
         zname_to_query_bds['f'] = np.array([0, .5])
         zname_to_query_stats['f'] = np.array([.3, .1])
 
-        Plotter_nz.plot_query_bds(zname_to_query_bds,
+        Plotter_nz.plot_query_bds(0,
+                                zname_to_query_bds,
                                 zname_to_query_stats=zname_to_query_stats,
                                 horizontal=horizontal)
 
     main1(horizontal=True)
     main2(10, horizontal=True)
     main3()
-    main4(horizontal=False)
+    main4(horizontal=True)
 

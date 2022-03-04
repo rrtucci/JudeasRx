@@ -2,6 +2,7 @@ from graphs.BayesNet import *
 from Reader import *
 import itertools
 from graphviz import Source
+import copy as cp
 
 
 class ImaginedBayesNet(BayesNet):
@@ -24,7 +25,7 @@ class ImaginedBayesNet(BayesNet):
     self.only_obs=False). In case of only experimental data, use an in_bnet
     with no X parents, and assume only_obs=True.
 
-    This class modifies the in_bnet structure as follows:
+    This class modifies the structure of in_bnet, as follows:
 
     1. it adds two new nodes Y0 and Y1 and a selection bias node Y0Y1. Y0Y1
     is given parents Y0, Y1 and no children. Its purpose is to introduce an
@@ -62,7 +63,7 @@ class ImaginedBayesNet(BayesNet):
     list. Note that Y0Y1 is treated as a random node.
 
     Each control node has only one active state at a time. The active state
-    has unit probablity, all other states of the node have zero probability.
+    has unit probability, all other states of the node have zero probability.
     Class MultiBounder_MC uses an imagined bnet (i.e., an object of this
     class) and loops over all possible trol_coords (i.e., control
     coordinates, tuples of active states for the control nodes).
@@ -75,7 +76,7 @@ class ImaginedBayesNet(BayesNet):
     trol_coords is a tuple of states for the control nodes. oe_data is a
     list of five probabilities oe_data=[o1b0, o1b1, px1, e1b0, e1b1],
     where o1b0=O_{1|0}, o1b1=O_{1|1}, px1=P(x=1), e1b0=E_{1|0}, e1b1=E_{
-    1|1}. This notation for probabities is explained in the chapter on
+    1|1}. This notation for probabilities is explained in the chapter on
     "Personalized Treatment Effects" of my book Bayesuvius.
 
     Attributes
@@ -123,7 +124,8 @@ class ImaginedBayesNet(BayesNet):
         use_Y0Y1 : bool
         only_obs : bool
         """
-        BayesNet.__init__(self, in_bnet.nodes)
+        cp_bnet = cp.deepcopy(in_bnet)
+        BayesNet.__init__(self, cp_bnet.nodes)
         self.nd_X = self.get_node_named("X")
         self.nd_Y = self.get_node_named("Y")
         assert self.nd_X.has_child(self.nd_Y), \
@@ -359,7 +361,10 @@ class ImaginedBayesNet(BayesNet):
             nd.potential.normalize_self()
 
     @staticmethod
-    def build_test_imagined_bnet(draw=False, use_Y0Y1=True, only_obs=False):
+    def build_test_imagined_bnet(draw=False,
+                                 jupyter=True,
+                                 use_Y0Y1=True,
+                                 only_obs=False):
         """
         This method builds an imagined bnet for testing purposes from a
         simple example of an input bnet.
@@ -368,6 +373,8 @@ class ImaginedBayesNet(BayesNet):
         ----------
         draw : bool
             True iff draw both input bnet and imagined bnet
+        jupyter : bool
+            True iff draws in Jupyter notebook
         use_Y0Y1 : bool
         only_obs : bool
 
@@ -399,7 +406,8 @@ class ImaginedBayesNet(BayesNet):
             nd.potential.set_to_random()
             nd.potential.normalize_self()
         if draw:
-            in_bnet.draw(algo_num=1)
+            # in_bnet.draw(algo_num=1)
+            in_bnet.gv_draw(jupyter)
 
         fixed_nd_list = []
         trol_list = [sp]
@@ -414,11 +422,12 @@ class ImaginedBayesNet(BayesNet):
                                          use_Y0Y1,
                                          only_obs)
         if draw:
-            imagined_bnet.draw(algo_num=1)
-            path1 = './tempo.dot'
-            imagined_bnet.write_dot(path1)
-            graph = Source(open(path1).read())
-            graph.view(filename='./tempo.gv')
+            # imagined_bnet.draw(algo_num=1)
+            # path1 = './tempo.dot'
+            # imagined_bnet.write_dot(path1)
+            # graph = Source(open(path1).read())
+            # graph.view(filename='./tempo.gv')
+            imagined_bnet.gv_draw(jupyter)
         return imagined_bnet
 
 
@@ -426,7 +435,7 @@ if __name__ == "__main__":
 
     def main(only_obs):
         imagined_bnet = ImaginedBayesNet.build_test_imagined_bnet(
-            draw=True, use_Y0Y1=True, only_obs=only_obs)
+            draw=True, jupyter=False, use_Y0Y1=True, only_obs=only_obs)
         print(imagined_bnet)
         print("*******************************")
 

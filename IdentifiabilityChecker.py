@@ -63,13 +63,25 @@ class IdentifiabilityChecker:
 
         self.trol_coords_to_query_bds = OrderedDict()
         self.trol_coords_to_query_stats = OrderedDict()
+        self.init_query_bds_and_stats()
+        self.trol_list = self.doX_bnet.trol_list
+
+    def init_query_bds_and_stats(self):
+        """
+        Initializes query bounds and statistics.
+
+        Returns
+        -------
+        None
+
+        """
         trol_range_list = [range(nd.size) for nd in
                            self.doX_bnet.trol_list]
 
         for trol_coords in itertools.product(*trol_range_list):
             self.trol_coords_to_query_bds[trol_coords] = np.array([1., 0])
             self.trol_coords_to_query_stats[trol_coords] = np.array([0.0, 0])
-        self.trol_list = self.doX_bnet.trol_list
+
 
     def estimate_query_for_these_trol_coords(self, trol_coords):
         """
@@ -147,6 +159,9 @@ class IdentifiabilityChecker:
         None
 
         """
+        # this is necessary when reuse self for several x_val
+        self.init_query_bds_and_stats()
+
         print("world:")
         for world in range(self.num_worlds):
             if (world+1) % 10 == 0 or world == self.num_worlds-1:
@@ -178,6 +193,7 @@ class IdentifiabilityChecker:
         None
 
         """
+        print("x_value=", self.doX_bnet.x_val)
         print("control nodes:",
               [nd.name for nd in self.trol_list])
         print("control coords to query bounds (low, high):")
@@ -195,7 +211,7 @@ if __name__ == "__main__":
                           num_worlds=5)
         checker.set_query_bds_and_stats()
         checker.print_query_bds_and_stats()
-        Plotter_nz.plot_query_bds(checker.get_query_bds(),
+        Plotter_nz.plot_query_bds(doX_bnet.x_val, checker.get_query_bds(),
             zname_to_query_stats=checker.get_query_stats(),
             horizontal=True)
     main()

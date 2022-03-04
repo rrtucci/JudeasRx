@@ -20,8 +20,7 @@ class DotTool:
         This method uses graphviz to draw the dot file located at
         dot_file_path. It creates a temporary file called tempo.png with a
         png of the dot file. If jupyter=True, it embeds the png in a jupyter
-        notebook. If jupyter=False, it opens a window with a png of the dot
-        file.
+        notebook. If jupyter=False, it opens a window showing the png.
 
         Parameters
         ----------
@@ -101,7 +100,7 @@ class DotTool:
 
         Returns
         -------
-        nx_graph : nx.Graph
+        nx_graph : nx.DiGraph
             networkx graph. To plot it, use
             nx.draw(nx_graph, with_labels=True, node_color='white')
             plt.show()
@@ -124,6 +123,40 @@ class DotTool:
 
         return nx_graph
 
+    @staticmethod
+    def write_dot_file_from_nx_graph(nx_graph, dot_file_path):
+        """
+        This method takes as input an nx_graph and it writes a dot file from
+        it. The output dot file's path is dot_file_path.
+
+        Parameters
+        ----------
+        nx_graph : nx.DiGraph
+        dot_file_path : str
+            path of output dot file
+
+        Returns
+        -------
+        None
+
+        """
+        nx.drawing.nx_pydot.write_dot(nx_graph, dot_file_path)
+
+    def get_nx_graph(self):
+        """
+        This method returns an nx.DiGraph with the same structure as self.
+
+        Returns
+        -------
+        nx.DiGraph
+
+        """
+        nx_graph = nx.DiGraph()
+        for pa_nd in self.nodes:
+            for ch_nd in pa_nd.children:
+                nx_graph.add_edge(pa_nd.name, ch_nd.name)
+        return nx_graph
+            
 
 if __name__ == "__main__":
 
@@ -133,6 +166,7 @@ if __name__ == "__main__":
         nx_graph = DotTool.nx_graph_from_dot_file(path)
         nx.draw(nx_graph, with_labels=True, node_color='white')
         plt.show()
+        DotTool.write_dot_file_from_nx_graph(nx_graph, "tempo9.dot")
 
     main()
 
