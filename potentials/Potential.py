@@ -82,6 +82,24 @@ class Potential:
         else:
             self.set_all_entries_to(bias)
 
+    def __deepcopy__(self, memo):
+        """
+        We want deepcopy to produce a copy of pot_arr but not of the nodes
+        in self.nodes so need to override the usual deepcopy.
+
+        Parameters
+        ----------
+        memo : dict
+
+        Returns
+        -------
+        Potential
+
+        """
+        copy_pot_arr = cp.deepcopy(self.pot_arr)
+        return Potential(self.is_quantum,
+                         ord_nodes=self.ord_nodes, pot_arr=copy_pot_arr)
+
     def is_joint_prob_dist(self):
         """
         Returns True if pot is a classical joint prob distribution of all
@@ -726,24 +744,6 @@ class Potential:
         """
 
         return self.pot_iop(right, Potential.__safe_itruediv)
-
-    def __deepcopy__(self, memo):
-        """
-        We want deepcopy to produce a copy of pot_arr but not of the nodes
-        in self.nodes so need to override the usual deepcopy.
-
-        Parameters
-        ----------
-        memo :
-
-        Returns
-        -------
-        Potential
-
-        """
-        copy_pot_arr = cp.deepcopy(self.pot_arr)
-        return Potential(self.is_quantum,
-                    ord_nodes=self.ord_nodes, pot_arr=copy_pot_arr)
 
     def __str__(self):
         """

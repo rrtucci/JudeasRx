@@ -8,6 +8,7 @@ import pandas as pd
 from graphs.Dag import *
 from nodes.BayesNode import *
 from BifTool import *
+from DotTool import *
 from potentials.DiscreteUniPot import *
 
 
@@ -34,6 +35,44 @@ class BayesNet(Dag):
 
         """
         Dag.__init__(self, nodes)
+
+    def __deepcopy__(self, memo):
+        """
+        Creates deep copy of self.
+
+        Parameters
+        ----------
+        memo : dict
+
+        Returns
+        -------
+        BayesNet
+
+        """
+        nd_to_new_nd = {}
+        for nd in self.nodes:
+            nd_to_new_nd[nd] = BayesNode(nd.id_num, nd.name)
+        for nd, new_nd in nd_to_new_nd.items():
+            new_nd.neighbors = set([nd_to_new_nd[nd1]
+                                    for nd1 in nd.neighbors])
+            new_nd.topo_index = nd.topo_index
+            new_nd.visited = nd.visited
+            new_nd.children = set([nd_to_new_nd[nd1]
+                                   for nd1 in nd.children])
+            new_nd.parents = set([nd_to_new_nd[nd1]
+                                  for nd1 in nd.parents])
+            # not in Dag:
+            new_nd.active_states = [x for x in nd.active_states]
+            new_pot_arr = cp.deepcopy(nd.potential.pot_arr)
+            new_ord_nodes = [nd_to_new_nd[nd1]
+                                for nd1 in nd.potential.ord_nodes]
+            new_nd.potential = Potential(nd.potential.is_quantum,
+                         ord_nodes=new_ord_nodes,
+                         pot_arr=new_pot_arr)
+            new_nd.size = nd.size
+            new_nd.state_names = [x for x in nd.state_names]
+
+        return BayesNet(set(nd_to_new_nd.values()))
 
     def add_nodes(self, nodes):
         """
@@ -132,6 +171,21 @@ class BayesNet(Dag):
                 nd.add_child(new_g.get_node_named(ch_name))
         return new_g
 
+    def get_nx_graph(self):
+        """
+        This method returns an nx.DiGraph with the same structure as self.
+
+        Returns
+        -------
+        nx.DiGraph
+
+        """
+        nx_graph = nx.DiGraph()
+        for pa_nd in self.nodes:
+            for ch_nd in pa_nd.children:
+                nx_graph.add_edge(pa_nd.name, ch_nd.name)
+        return nx_graph
+
     @staticmethod
     def read_bif(path, is_quantum):
         """
@@ -205,6 +259,26 @@ class BayesNet(Dag):
             bt.pot_arrays[node.name] = node.potential.pot_arr
         bt.write_bif(path)
 
+    def gv_draw(self, jupyter=True):
+        """
+        This method uses graphviz to draw self. It creates a temporary file
+        called tempo.png with a png of self. If jupyter=True, it embeds the png
+        in a jupyter notebook. If jupyter=False, it opens a window showing the
+        png.
+
+        Parameters
+        ----------
+        jupyter : bool
+
+        Returns
+        -------
+        None
+
+        """
+        path = "tempo.dot"
+        DotTool.write_dot_file_from_nx_graph(self.get_nx_graph(), path)
+        DotTool.draw(path, jupyter=jupyter)
+
     def __str__(self):
         """
         Specifies the string outputted by print(obj) where obj is an object
@@ -259,5 +333,12 @@ if __name__ == "__main__":
         # path1 = '../examples_qbnets/QuWetGrass1.bif'
         # new_bnet = BayesNet.read_bif(path, True)
         # new_bnet.write_bif(path1, True)
+
+        nx_graph = new_bnet.get_nx_graph()
+        print(nx_graph)
+
+        copy_bnet = cp.deepcopy(new_bnet)
+        print("copy_bnet\n", copy_bnet)
+
     main()
 
