@@ -42,7 +42,7 @@ def get_unobs_nd_names(gname):
 def get_dot_file_path(gname):
     """
     For a graph named gname, this method returns the path to its dot file in
-    the dot_lib directory.
+    the dot_atlas directory.
 
     Parameters
     ----------
@@ -53,7 +53,7 @@ def get_dot_file_path(gname):
     str
 
     """
-    return "dot_lib/good_bad_trols_" + gname + ".dot"
+    return "dot_atlas/good_bad_trols_" + gname + ".dot"
 
 
 def build_in_bnet(gname, jupyter=True):

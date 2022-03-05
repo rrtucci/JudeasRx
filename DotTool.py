@@ -161,7 +161,7 @@ class DotTool:
 if __name__ == "__main__":
 
     def main():
-        path = 'dot_lib/good_bad_trols_G3.dot'
+        path = 'dot_atlas/good_bad_trols_G3.dot'
         DotTool.draw(path, jupyter=False)
         nx_graph = DotTool.nx_graph_from_dot_file(path)
         nx.draw(nx_graph, with_labels=True, node_color='white')
