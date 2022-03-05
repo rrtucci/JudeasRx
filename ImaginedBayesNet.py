@@ -15,6 +15,9 @@ class ImaginedBayesNet(BayesNet):
     X, Y and an arrow X->Y, and then it modifies in_bnet. The new bnet is
     assigned to self of this class and is called an "imagined bnet".
 
+    in_bnet is modified by this class. If you want to use it later on,
+    you can first make a deepcopy of it using cp.deepcopy(in_bnet).
+
     Let trols_list be a list of control nodes. trol nodes should be selected
     judiciously from the set of all nodes of in_bnet. See Judea Pearl's
     advice on good and bad controls:
