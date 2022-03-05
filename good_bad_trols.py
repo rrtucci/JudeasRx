@@ -165,7 +165,7 @@ if __name__ == "__main__":
     random.seed(871)
     def main():
         print(all_gnames)
-        run(["G11u"], #all_gnames[0:2],
+        run(all_gnames[0:2],
             num_1world_samples=10,
             num_worlds=3,
             jupyter=False)
