@@ -53,7 +53,7 @@ Jupyter notebook with an example with 3 strata is provided.
 
 So far, we have described only how JudeasRx can calculate *analytically* 
 bounds for 
-PNS, PN and PS, for very broad classes of DAGs (directed acyclc graphs), 
+PNS, PN and PS, for very broad classes of DAGs (directed acyclic graphs), 
 for an arbitrary number of strata.
 If 
 one assumes a specific DAG, those bounds can be made tighter. JudeasRx can 
