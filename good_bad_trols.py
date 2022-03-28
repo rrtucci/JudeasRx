@@ -11,7 +11,8 @@ the series of jupyter notebooks named "good_bad_trols_*.ipynb"
 
 # all graph names (i.e., gnames). An example of a gname is "G3"
 all_gnames = ["G" + str(z) for z in range(1, 12)] + ["G11u"] \
-             + ["G" + str(z) for z in range(12, 19)]
+             + ["G" + str(z) for z in range(12, 19)] \
+             + ["G7up"]  # number 19
 
 
 def get_unobs_nd_names(gname):
@@ -30,7 +31,7 @@ def get_unobs_nd_names(gname):
     """
     if gname in ["G2", "G3", "G5", "G6", "G10", "G11u", "G15", "G16"]:
         li = ["U"]
-    elif gname == "G7":
+    elif gname in ["G7", "G7up"]:
         li = ["U1", "U2"]
     else:
         li = []
