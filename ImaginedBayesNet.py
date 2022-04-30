@@ -43,11 +43,11 @@ class ImaginedBayesNet(BayesNet):
     observational data (self.only_obs=True), it makes trol_list the parents
     of both Y0 and Y1. Hence, X is a parent of both Y0 and Y1 iff
     self.only_obs=True. Why these 2 cases are treated differently: if there
-    is both observational and data, there is twice as much data to fit into
-    the TPMs (transition probability matrices) of nodes Y0 and Y1, so Y0 and
-    Y1 need an extra parent to enlarge the TPM so that it can fit twice as
-    much data. Regardless of the value of self.only_obs, this class makes (
-    Y, Y0Y1) the children of both Y0 and Y1.
+    is both observational and experimental data, there is twice as much data
+    to fit into the TPMs (transition probability matrices) of nodes Y0 and
+    Y1, so Y0 and Y1 need an extra parent to enlarge the TPM so that it can
+    fit twice as much data. Regardless of the value of self.only_obs,
+    this class makes ( Y, Y0Y1) the children of both Y0 and Y1.
 
     This class assigns a TPM (transition probability matrix) to each node of
     the imagined bnet as follows:
