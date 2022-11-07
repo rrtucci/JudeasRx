@@ -51,7 +51,11 @@ class BayesNet(Dag):
         """
         nd_to_new_nd = {}
         for nd in self.nodes:
-            nd_to_new_nd[nd] = BayesNode(nd.id_num, nd.name)
+            new_node = BayesNode(nd.id_num, nd.name)
+            # important to set new node sizes before
+            # constructing new node potentials
+            new_node.size = nd.size
+            nd_to_new_nd[nd] = new_node
         for nd, new_nd in nd_to_new_nd.items():
             new_nd.neighbors = set([nd_to_new_nd[nd1]
                                     for nd1 in nd.neighbors])
@@ -65,13 +69,13 @@ class BayesNet(Dag):
             new_nd.active_states = [x for x in nd.active_states]
             new_pot_arr = cp.deepcopy(nd.potential.pot_arr)
             new_ord_nodes = [nd_to_new_nd[nd1]
-                                for nd1 in nd.potential.ord_nodes]
+                             for nd1 in nd.potential.ord_nodes]
             new_nd.potential = Potential(nd.potential.is_quantum,
-                         ord_nodes=new_ord_nodes,
-                         pot_arr=new_pot_arr)
-            new_nd.size = nd.size
+                                         ord_nodes=new_ord_nodes,
+                                         pot_arr=new_pot_arr)
             new_nd.state_names = [x for x in nd.state_names]
-
+            # print("8899t", new_nd.name, new_nd.size,
+            #       new_nd.potential.pot_arr.shape)
         return BayesNet(set(nd_to_new_nd.values()))
 
     def add_nodes(self, nodes):
@@ -292,13 +296,13 @@ class BayesNet(Dag):
         st = ""
         for nd in self.nodes:
             st += nd.name \
-                + ", parents=" \
-                + str([x.name for x in nd.parents]) \
-                + ", children=" \
-                + str([x.name for x in nd.children]) \
-                + "\n" \
-                + str(nd.potential) \
-                + "\n\n"
+                  + ", parents=" \
+                  + str([x.name for x in nd.parents]) \
+                  + ", children=" \
+                  + str([x.name for x in nd.children]) \
+                  + "\n" \
+                  + str(nd.potential) \
+                  + "\n\n"
         return st
 
 
