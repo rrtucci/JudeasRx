@@ -56,7 +56,7 @@ class DotTool:
         # does not understand dot statements like X->Y,Z;
             nx_graph = nx.nx_pydot.read_dot(dot_file_path)
 
-        This function will reads a dot file of a very basic form only. An
+        This function will read a dot file of a very basic form only. An
         example of the basic form is:
 
         dot = "digraph G {\n" \
