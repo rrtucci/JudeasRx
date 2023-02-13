@@ -81,6 +81,8 @@ class DotTool:
             in_lines = f.readlines()
             for line in in_lines:
                 if "->" in line:
+                    # ignore arrow attributes
+                    line = line.split(sep="[")[0]
                     split_list = line.split(sep="->")
                     # print("ffgg", split_list)
                     pa = split_list[0].strip()
